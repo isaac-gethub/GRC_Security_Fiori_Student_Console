@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GRC Security &amp; Fiori Student Console — TIB Systems</title>
+<style>
+  :root{
+    --navy:#1F3864; --navy-deep:#10233F; --gold:#9C7A22; --gold-light:#C79A3D;
+    --paper:#FAF9F6; --panel:#FFFFFF; --ink:#1D1D1B; --ink-soft:#55524C; --line:#DAD5C8;
+    --green:#1E7145; --red:#C00000;
+    --auth-bg:#F4F6FA; --auth-border:#E1E6EF; --auth-muted:#5A6472;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; color:var(--ink); }
+  a { color: inherit; }
+  .hidden{ display:none !important; }
+
+  /* ============ AUTH SCREENS ============ */
+  #wrap-auth{ background:var(--auth-bg); min-height:100vh; }
+  .auth-inner{ max-width:460px; margin:0 auto; padding:24px 16px 60px; }
+  .auth-top{ background:linear-gradient(135deg,var(--navy),var(--navy-deep)); color:#fff; padding:22px 20px; border-radius:14px; margin-bottom:18px; }
+  .auth-top h1{ margin:0 0 4px; font-size:1.25rem; }
+  .auth-top p{ margin:0; font-size:0.85rem; color:#C9D4E8; }
+  .auth-card{ background:var(--panel); border:1px solid var(--auth-border); border-radius:14px; padding:24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(20,30,60,0.05); }
+  .auth-card h2{ margin:0 0 14px; font-size:1.1rem; }
+  .auth-card label{ display:block; font-size:0.85rem; font-weight:600; margin:14px 0 6px; color:var(--auth-muted); }
+  .auth-card input[type=email], .auth-card input[type=password], .auth-card input[type=text]{
+    width:100%; padding:11px 12px; border:1.5px solid var(--auth-border); border-radius:9px; font-size:0.95rem; font-family:inherit;
+  }
+  .auth-card input:focus{ outline:none; border-color:var(--gold); }
+  .auth-btn{
+    display:inline-block; width:100%; background:var(--gold); color:#fff; border:none;
+    padding:13px 22px; border-radius:9px; font-size:0.95rem; font-weight:600;
+    cursor:pointer; transition:background 0.15s; margin-top:18px; text-align:center; text-decoration:none;
+  }
+  .auth-btn:hover{ background:var(--navy); }
+  .auth-btn.secondary{ background:#fff; color:var(--gold); border:1.5px solid var(--gold); }
+  .auth-btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .auth-link-row{ text-align:center; margin-top:16px; font-size:0.87rem; }
+  .auth-link-row a{ color:var(--gold); text-decoration:none; cursor:pointer; }
+  .auth-link-row a:hover{ text-decoration:underline; }
+  .auth-msg{ padding:11px 14px; border-radius:9px; font-size:0.87rem; margin-top:14px; line-height:1.5; }
+  .auth-msg.error{ background:#FBE8E8; color:var(--red); border:1px solid #F0C4C4; }
+  .auth-msg.ok{ background:#E7F3EC; color:var(--green); border:1px solid #C3E2CE; }
+  .auth-msg.info{ background:#EAF0F8; color:var(--navy); border:1px solid #C9D4E8; }
+  .auth-spinner{ width:30px; height:30px; margin:30px auto; border:3px solid var(--auth-border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .pwreq{ font-size:0.78rem; color:var(--auth-muted); margin-top:4px; }
+
+  /* ============ MAIN APP (post-login) ============ */
+  #wrap-app { display: flex; min-height: 100vh; font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif; background: var(--paper); }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .sidebar {
+    width: 300px; flex-shrink: 0; background: var(--navy-deep); color: #E9E4D8;
+    padding: 22px 0 30px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .brand { padding: 0 22px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .brand .kicker { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 10.5px; letter-spacing: 0.06em; color: var(--gold-light); margin: 0 0 6px; }
+  .brand h1 { font-size: 18px; margin: 0 0 4px; line-height: 1.25; font-weight: 600; }
+  .brand p.who { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; color: #B9B2A0; margin: 0 0 8px; }
+  .brand .signout { background: none; border: none; color: var(--gold-light); font-size: 11.5px; cursor: pointer; text-decoration: underline; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+
+  .mode-toggle { display: flex; gap: 6px; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .mode-toggle button {
+    flex: 1; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; font-weight: 700;
+    padding: 9px 8px; border-radius: 18px; cursor: pointer; border: 1.5px solid var(--gold-light);
+    background: rgba(199,154,61,0.12); color: #fff; transition: background 0.15s ease;
+  }
+  .mode-toggle button.active { background: var(--gold-light); color: var(--navy-deep); }
+
+  .progress-block { padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.12); font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+  .progress-block .label { font-size: 11.5px; color: #B9B2A0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .progress-track { height: 6px; background: rgba(255,255,255,0.14); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.4s ease; }
+  .sync-status { margin-top: 8px; font-size: 10.5px; color: #8b8878; }
+  .sync-status.on { color: var(--gold-light); }
+
+  .lab-nav { list-style: none; margin: 0; padding: 10px 10px; }
+  .lab-nav li { margin-bottom: 2px; }
+  .lab-nav button {
+    width: 100%; text-align: left; background: none; border: none; color: #D9D3C4;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px;
+    padding: 10px 12px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+  }
+  .lab-nav button:hover { background: rgba(255,255,255,0.06); }
+  .lab-nav button.active { background: rgba(255,255,255,0.11); color: #fff; }
+  .lab-nav .num { font-weight: 700; color: var(--gold-light); width: 18px; flex-shrink: 0; }
+  .lab-nav .dom { flex: 1; }
+  .lab-nav .check { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #6b6656; flex-shrink: 0; }
+  .lab-nav button.done .check { background: var(--gold-light); border-color: var(--gold-light); }
+
+  .main { flex: 1; padding: 44px 52px 100px; max-width: 900px; }
+  .rules-banner {
+    display: flex; gap: 20px; background: #2A2320; color: #F1EADD;
+    padding: 14px 20px; border-radius: 3px; margin-bottom: 32px;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; flex-wrap: wrap;
+  }
+  .rules-banner div { flex: 1; min-width: 220px; }
+  .rules-banner b { color: var(--gold-light); }
+
+  .lab-header .eyebrow { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--ink-soft); margin: 0 0 6px; }
+  .lab-header h2 { font-size: 28px; margin: 0 0 4px; color: var(--navy); line-height: 1.2; }
+  .lab-header .companion { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--ink-soft); font-style: italic; margin-bottom: 30px; }
+
+  .field { margin-bottom: 28px; }
+  .field h3 {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: var(--navy);
+    border-bottom: 2px solid var(--line); padding-bottom: 6px; margin: 0 0 10px; display: flex; align-items: baseline; gap: 8px;
+  }
+  .field h3 .fn { color: var(--gold); font-weight: 700; }
+  .field p { margin: 0 0 10px; font-size: 15.5px; }
+
+  .exec-part { margin: 16px 0 20px; padding-left: 18px; border-left: 3px solid var(--line); }
+  .exec-part h4 { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--gold); margin: 0 0 8px; }
+  .exec-part .before { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-bottom: 10px; }
+  .exec-part ol { margin: 0 0 10px; padding-left: 22px; }
+  .exec-part li { margin-bottom: 8px; font-size: 15px; }
+  .exec-part li label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+  .exec-part li input[type=checkbox] { margin-top: 5px; flex-shrink: 0; }
+  .exec-part li span.done-text { text-decoration: line-through; color: #8b8878; }
+  .capture { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; color: var(--ink-soft); background: #F2F0E8; padding: 8px 12px; border-radius: 3px; }
+  .capture b { color: var(--ink); }
+
+  .callout { background: #F2F0E8; border-left: 4px solid var(--gold); padding: 14px 18px; border-radius: 3px; margin: 8px 0 18px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: var(--ink); }
+  .callout b { display: block; color: var(--navy); margin-bottom: 4px; font-size: 12px; }
+
+  textarea { width: 100%; min-height: 100px; font-family: Georgia, serif; font-size: 15px; border: 1.5px solid var(--line); border-radius: 3px; padding: 12px 14px; resize: vertical; background: var(--panel); color: var(--ink); }
+  textarea:focus { outline: none; border-color: var(--navy); }
+
+  .reveal-btn, .gate-btn, .action-btn {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 600;
+    background: var(--navy); color: #fff; border: none; padding: 9px 18px; border-radius: 3px; cursor: pointer; margin-top: 10px;
+  }
+  .reveal-btn:hover, .gate-btn:hover, .action-btn:hover { background: var(--navy-deep); }
+
+  .model-box { display: none; margin-top: 12px; background: #EAF0EA; border-left: 4px solid var(--green); padding: 14px 18px; border-radius: 3px; }
+  .model-box.shown { display: block; }
+  .model-box .tag { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 0.04em; margin-bottom: 6px; }
+  .model-box p { margin: 0; font-size: 15px; }
+
+  .challenge-quote { font-size: 17px; font-style: italic; color: var(--navy); border-left: 4px solid var(--navy); padding: 4px 0 4px 18px; margin: 6px 0 14px; }
+
+  .gate-section { margin-top: 36px; background: #2A2320; color: #F1EADD; padding: 20px 22px; border-radius: 3px; }
+  .gate-section .warn { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; color: var(--gold-light); margin-bottom: 10px; }
+  .gate-section .gq { font-size: 16px; font-style: italic; margin-bottom: 12px; }
+  .gate-section textarea { background: #3A322D; border-color: #574C41; color: #F1EADD; }
+  .gate-section .model-box { background: #33392E; border-left-color: var(--gold-light); }
+  .gate-section .model-box .tag { color: var(--gold-light); }
+  details.gate-toggle summary { cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--gold-light); margin-bottom: 14px; }
+
+  .complete-row { display: flex; align-items: center; justify-content: space-between; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
+  .complete-row .status { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; color: var(--ink-soft); }
+  .complete-row .status.done { color: var(--green); font-weight: 600; }
+
+  /* Course Guide mode */
+  .guide-box { background: #F2F0E8; border-left: 4px solid var(--gold); padding: 16px 20px; border-radius: 3px; margin: 0 0 22px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13.5px; }
+  .guide-box b.label { display: block; color: var(--navy); margin-bottom: 4px; font-size: 12px; }
+  .guide-box p { margin: 0; font-style: italic; }
+  .guide-sub { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--navy); margin: 20px 0 10px; }
+  .guide-steps { margin: 0 0 16px; padding-left: 20px; }
+  .guide-steps li { margin-bottom: 9px; font-size: 15px; }
+  .guide-deliver { background: #EDF1EC; border-left: 4px solid var(--green); padding: 14px 18px; border-radius: 3px; margin: 18px 0 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13.5px; }
+  .guide-deliver b.label { display: block; color: var(--green); margin-bottom: 4px; font-size: 12px; }
+  .guide-deliver p { margin: 0; font-style: italic; }
+  .guide-goto { display: inline-block; margin-top: 16px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 700; background: var(--gold); color: #fff; padding: 9px 16px; border-radius: 3px; cursor: pointer; border: none; }
+  .guide-goto:hover { background: var(--gold-light); }
+
+  @media (max-width: 880px) {
+    #wrap-app { flex-direction: column; }
+    .sidebar { width: 100%; height: auto; position: relative; padding-bottom: 10px; }
+    .main { padding: 30px 20px 80px; }
+    .lab-header h2 { font-size: 22px; }
+  }
+  @media (max-width: 600px) {
+    .rules-banner { flex-direction: column; gap: 10px; }
+    .field p, .exec-part li { font-size: 14.5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH SCREENS ============ -->
+<div id="wrap-auth">
+  <div class="auth-inner">
+    <div class="auth-top">
+      <h1>GRC Security &amp; Fiori Student Console</h1>
+      <p>TIB Systems LLC &middot; A separate career-path program from SOX/ITGC</p>
+    </div>
+
+    <div id="view-checking" class="auth-card">
+      <div class="auth-spinner"></div>
+      <p style="text-align:center; color:var(--auth-muted); font-size:0.9rem;">Loading&hellip;</p>
+    </div>
+
+    <div id="view-login" class="auth-card hidden">
+      <h2>Sign In</h2>
+      <div id="login-msg"></div>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" autocomplete="email">
+      <label for="login-pass">Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password">
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+      <div class="auth-link-row"><a onclick="showView('forgot')">Forgot your password?</a></div>
+      <div class="auth-link-row">New here? <a onclick="showView('signup')">Create an account</a></div>
+    </div>
+
+    <div id="view-signup" class="auth-card hidden">
+      <h2>Create Your Account</h2>
+      <p style="font-size:0.85rem; color:var(--auth-muted); margin:-4px 0 0;">Use the same email you used to enroll.</p>
+      <div id="signup-msg"></div>
+      <label for="signup-name">Full Name</label>
+      <input type="text" id="signup-name" autocomplete="name">
+      <label for="signup-email">Email</label>
+      <input type="email" id="signup-email" autocomplete="email">
+      <label for="signup-pass">Password</label>
+      <input type="password" id="signup-pass" autocomplete="new-password">
+      <p class="pwreq">At least 8 characters.</p>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create Account &amp; Sign In</button>
+      <div class="auth-link-row">Already have an account? <a onclick="showView('login')">Sign in</a></div>
+    </div>
+
+    <div id="view-forgot" class="auth-card hidden">
+      <h2>Reset Your Password</h2>
+      <p style="font-size:0.85rem; color:var(--auth-muted); margin:-4px 0 0;">We'll email you a link to set a new password.</p>
+      <div id="forgot-msg"></div>
+      <label for="forgot-email">Email</label>
+      <input type="email" id="forgot-email" autocomplete="email">
+      <button class="auth-btn" id="forgot-btn" onclick="doForgot()">Send Reset Link</button>
+      <div class="auth-link-row"><a onclick="showView('login')">Back to sign in</a></div>
+    </div>
+
+    <div id="view-reset" class="auth-card hidden">
+      <h2>Set a New Password</h2>
+      <div id="reset-msg"></div>
+      <label for="reset-pass">New Password</label>
+      <input type="password" id="reset-pass" autocomplete="new-password">
+      <p class="pwreq">At least 8 characters.</p>
+      <label for="reset-pass2">Confirm New Password</label>
+      <input type="password" id="reset-pass2" autocomplete="new-password">
+      <button class="auth-btn" id="reset-btn" onclick="doReset()">Set Password &amp; Sign In</button>
+    </div>
+
+    <div id="view-noenroll" class="auth-card hidden">
+      <h2>We Couldn't Find Your Enrollment</h2>
+      <p style="font-size:0.9rem; line-height:1.55;">We don't see an active enrollment for this email yet. If you just enrolled, this can take a little while to process. If it's been longer than a day, reach out to us at <strong>support@tib-systems.com</strong> and we'll sort it out.</p>
+      <button class="auth-btn secondary" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN APP (post-login) ============ -->
+<div id="wrap-app" class="hidden">
+  <nav class="sidebar">
+    <div class="brand">
+      <p class="kicker">TIB SYSTEMS &middot; GRC SECURITY &amp; FIORI</p>
+      <h1>Student Console</h1>
+      <p class="who" id="who-email"></p>
+      <button class="signout" onclick="doSignOut()">Sign out</button>
+    </div>
+    <div class="mode-toggle">
+      <button id="mode-guide-btn" onclick="setMode('guide')">Course Guide</button>
+      <button id="mode-lab-btn" onclick="setMode('lab')">Primary Lab</button>
+    </div>
+    <div class="progress-block">
+      <div class="label"><span>Progress</span><span id="progress-count">0 of 8</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div id="sync-status" class="sync-status"></div>
+    </div>
+    <ul class="lab-nav" id="lab-nav"></ul>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+  var LABS = [{"lab": 1, "book": "The Ruleset That Went Quiet", "domain": "Access Risk Analysis / SoD Ruleset Design", "situation": "Calder Ridge's quarterly SoD violation report from GRC Access Control has shown near-zero violations for three straight quarters \u2014 a pattern that looks clean but coincides with a Fiori rollout eighteen months ago that retired several classic transaction codes without anyone updating the ruleset's function definitions to match.", "process": "Procure-to-pay staff create and maintain vendor master records and post vendor payments. The SoD rule in question exists to flag any single user able to perform both.", "risk": "A user with both vendor-master and payment-posting access could create a fictitious or altered vendor and pay it without independent detection \u2014 and the ruleset's outdated function scope means that access combination is no longer being watched for at all.", "objective": "Ensure the SoD ruleset's function definitions reflect the transaction codes and Fiori apps the business actually executes today, so real access conflicts in procure-to-pay are detected rather than silently missed.", "design": "A GRC Access Control ruleset defines each function's action list (transaction codes / Fiori app IDs). When the business's execution layer changes, the function definitions must be updated in lockstep, or the rule stops watching the real risk while still appearing to exist.", "population": "All function IDs within the procure-to-pay risk category whose action lists reference transaction codes retired or superseded in the last Fiori rollout.", "pop_source": "GRC Access Control's function maintenance configuration (SPRO > GRC > Access Control > Maintain Functions), cross-referenced against the Fiori app-to-backend-transaction mapping list from the rollout project.", "completeness": "Reconcile the exported function list count against the ruleset's total function count in the GRC configuration UI, and confirm the Fiori mapping list used for cross-reference is the final rollout version, not an interim draft.", "sampling": "Full population review, not a sample \u2014 every procure-to-pay function definition must be checked, because a single missed function can hide an entire class of undetected conflict.", "evidence": "Screenshots of each affected function's action list before and after correction, the training-ruleset risk analysis rerun showing the newly surfaced conflicts, and the documented mapping table tying old transaction codes to their Fiori/backend replacements.", "exec": [{"title": "Part A \u2014 Run the Baseline Risk Analysis", "before": "Confirm you are in the designated training client, signed in with your assigned training user ID.", "steps": ["Access GRAC_SPM (or the Access Risk Analysis Fiori app).", "Run a risk analysis for the procure-to-pay risk category at user level, full user population.", "Export the result set and note the total violation count."], "capture": "Risk analysis run date/time, total violation count, risk ID(s) reviewed."}, {"title": "Part B \u2014 Trace a Function's Action List", "before": "Have the current Fiori-to-backend transaction mapping list open for reference.", "steps": ["Navigate to the Maintain Functions configuration for the flagged risk's function IDs.", "Open each function's action list and record every transaction code / Fiori app ID currently included.", "Cross-check each entry against the mapping list to identify retired codes with no listed replacement."], "capture": "Function ID, current action list, any retired codes found, their correct replacement app ID."}, {"title": "Part C \u2014 Update the Function and Retest (Practice Namespace)", "before": "Confirm the practice ruleset copy assigned to you (prefixed ZZ_TRAIN_) is the one you are editing \u2014 never the live ruleset.", "steps": ["In your training ruleset copy, add the correct current Fiori app ID / backend transaction to the affected function's action list.", "Save and generate the updated rule.", "Rerun the risk analysis against the same user population using the training ruleset.", "Compare the new violation count against Part A's baseline."], "capture": "Before/after violation counts, screenshot of the corrected function definition, names of any newly surfaced conflicted users."}], "evaluation": "A properly corrected function should surface conflicts that existed all along but were invisible to the outdated rule. If the count doesn't change at all after correction, re-check that the correct app ID was actually added and saved to the training ruleset.", "conclusion_model": "The ruleset's function definitions had not been updated after the Fiori rollout, which meant a real, ongoing SoD conflict in procure-to-pay had gone undetected for over a year. Correcting the function's action list to reflect current transaction usage restored the rule's ability to detect the risk it was originally built for.", "challenge": "The business risk owner signed off on the original ruleset scope. Doesn't that sign-off cover this too?", "challenge_model": "A scope sign-off covers the ruleset as it existed at that point in time; it does not anticipate every future change to how the business executes its processes. When the underlying transaction landscape changes materially \u2014 such as a Fiori migration retiring transaction codes \u2014 the ruleset needs to be revalidated against current reality, regardless of how firmly the original scope was approved.", "gate": "If updating this function's action list caused the violation count to jump from near-zero to double digits overnight, how would you communicate that to the client without it sounding like the consulting team just created a new problem?", "gate_model": "Frame it as detection catching up to reality, not a new risk being created \u2014 the conflicts existed the entire time; the correction simply made them visible again. Lead with the population and evidence (how many users, what access, how long), not with blame toward whoever built the original ruleset, and pair the finding with a remediation plan in the same conversation."}, {"lab": 2, "book": "The Shared Login", "domain": "Emergency Access Management (Firefighter)", "situation": "A three-month backlog of Firefighter log reports shows every entry as \"reviewed,\" but the reviewer field on every one is the same controller who was on leave for six of those weeks.", "process": "Firefighter ID FF_FI_02 is used during month-end close by whoever on the finance team happens to be handling it that cycle, rather than a single named individual.", "risk": "Shared use of a Firefighter ID breaks individual accountability \u2014 if something goes wrong during a session, there is no reliable way to determine who actually performed it, and a reviewed-but-not-actually-reviewed log gives false assurance that nothing did.", "objective": "Confirm that Firefighter sessions map to a single identifiable individual, and that log reviews are evidenced, independent, and actually performed by someone who was available to perform them.", "design": "Each Firefighter ID assignment should be individual and time-bound; each session's log should be reviewed by a designated reviewer within a defined window, with documented evidence of that review distinct from a status flag.", "population": "All Firefighter sessions on FF_FI_02 (and any other shared-use IDs identified) over the backlog period, plus the corresponding review records.", "pop_source": "GRAC_SPM Firefighter Log Report for the assignment and session history; badge/VPN access logs and leave/calendar records as independent corroboration.", "completeness": "Confirm the log report's session count for the period matches the raw system log table count for that Firefighter ID \u2014 a filtered or date-truncated export will understate the true population.", "sampling": "Full population for the backlog period under review; a targeted sample of sessions with no corroborating badge/VPN match for deeper investigation.", "evidence": "Log report export, badge/VPN reconciliation worksheet showing matched and unmatched sessions, and the corrected review-evidence template once redesigned.", "exec": [{"title": "Part A \u2014 Pull the Log Report and Reviewer Field", "before": "Identify the Firefighter ID(s) and date range in scope before opening the report.", "steps": ["Run the Firefighter Log Report for FF_FI_02 over the backlog period.", "Record the reviewer field and review-status flag for each session.", "Cross-check the reviewer's leave/calendar record for the review dates shown."], "capture": "Session list, reviewer per session, any sessions reviewed during the reviewer's confirmed leave."}, {"title": "Part B \u2014 Reconcile Sessions to People", "before": "Have badge or VPN log access ready; this step is a manual reperformance and will take longer than a report pull.", "steps": ["For each session, identify the login timestamp and duration.", "Match the timestamp against badge/VPN records to identify who was physically or remotely present.", "Flag any session with no matching individual record."], "capture": "Matched sessions with identified individual, unmatched sessions requiring follow-up."}, {"title": "Part C \u2014 Configure Individual Assignment and Expedited Approval (Training Namespace)", "before": "Work in your assigned training EAM configuration copy, not the live Firefighter ID assignment.", "steps": ["Build an individual Firefighter assignment for a named test user in the training configuration.", "Configure an expedited MSMP approval path for that assignment type with a same-day service level.", "Simulate a month-end request end to end and confirm it resolves to one named individual with a timestamped approval."], "capture": "Screenshot of the individual assignment, the expedited approval path configuration, and the completed test request."}], "evaluation": "If sessions remain unmatched to any individual after reconciliation, treat that as a control gap requiring escalation, not an inconclusive result to set aside.", "conclusion_model": "Firefighter ID FF_FI_02 was shared across multiple users, and its log reviews were being marked complete by a reviewer who was on leave for part of the period \u2014 meaning neither individual accountability nor independent review was actually operating, despite the system showing both as satisfied.", "challenge": "If I make everyone wait for individual Firefighter provisioning, month-end doesn't close on schedule. Isn't that a business problem too?", "challenge_model": "It is a real business problem, and dismissing it will lose the room. The fix isn't choosing between speed and accountability \u2014 it's building an approval path fast enough to meet the business need while still keeping assignment individual, which is exactly what Part C's expedited path demonstrates is possible.", "gate": "The team lead whose staff used the shared login isn't hiding anything and is embarrassed once the finding surfaces. How do you deliver this finding without making it feel like an accusation?", "gate_model": "Separate the finding from the person: the finding is the shared-use pattern and the review gap, not any individual's judgment. Acknowledge the real scheduling pressure that led to the workaround, and bring a working alternative (the expedited path) to the same conversation as the finding, not as an afterthought."}, {"lab": 3, "book": "The Split That Closed a Door", "domain": "Business Role Design & PFCG", "situation": "A composite role carrying an SoD conflict was split into two roles over a weekend go-live. By Monday morning, the AP team can no longer complete a routine, non-conflicting task that the split accidentally severed.", "process": "AP staff perform a three-way match step that touches both a vendor-side field and a payment-side transaction on the same screen \u2014 a legitimate task that doesn't itself create an SoD conflict.", "risk": "Splitting a role along transaction-code lines rather than authorization-object lines can either leave a shared object creating a new conflict, or remove an object needed for a legitimate task that happened to share ground with the removed access.", "objective": "Restore the severed legitimate access without recreating the original SoD conflict the split was designed to close.", "design": "Role splits should be scoped at the authorization-object and field-value level, verified against both the conflict being closed and every legitimate task the affected users still need to perform.", "population": "The two split roles (vendor maintenance and payment posting), their full authorization object lists, and the specific field-level values in each.", "pop_source": "PFCG role authorization data for both roles (via the role's authorization tab or a SUIM authorization-object report), compared against the original composite role's authorization data as a baseline.", "completeness": "Confirm the pulled authorization object list for each role includes all objects, not just the ones added or changed during the split \u2014 an incremental change log will miss inherited objects.", "sampling": "Not a sample \u2014 every authorization object in both split roles must be compared against the original composite role to find the specific missing object.", "evidence": "Side-by-side authorization object comparison, the specific object and field values causing the gap, and QA test results confirming the corrected role restores the task without reopening the SoD conflict.", "exec": [{"title": "Part A \u2014 Compare Composite vs. Split Role Authorizations", "before": "Have the original composite role's authorization data exported before it's decommissioned or hard to retrieve.", "steps": ["Export the full authorization object list, with field values, for the original composite role.", "Export the same for both resulting split roles.", "Line up all three side by side to identify what each split role kept, dropped, or shares."], "capture": "Full three-way authorization object comparison table."}, {"title": "Part B \u2014 Identify the Missing Non-Conflicting Object", "before": "Know the exact SoD conflict definition (which two authorizations together create the risk) before starting this step.", "steps": ["From the comparison, identify the object(s) present in the composite role but missing from both split roles.", "Confirm this object is not one of the two authorizations that create the original SoD conflict.", "Document the object and field values needed to restore the legitimate task."], "capture": "The specific authorization object and field values required, with confirmation it does not overlap the SoD conflict definition."}, {"title": "Part C \u2014 Rebuild the Role and Retest (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ copy of the affected role, not the production role.", "steps": ["Add the missing authorization object and field values to your training copy of the vendor-maintenance role.", "Save and generate the role.", "Run a risk analysis against the corrected role combination to confirm the original SoD conflict does not reappear.", "Have a business tester (or simulated test script) execute the three-way match step against the corrected role."], "capture": "Confirmation the SoD conflict stays closed, and confirmation the three-way match step now completes successfully."}], "evaluation": "A correct fix restores the specific legitimate task without any change to the SoD risk analysis result. If the risk analysis result changes at all after your fix, you've likely restored more than the one missing object.", "conclusion_model": "The original split was scoped along transaction-code lines rather than authorization-object lines, which left a legitimate cross-functional task without an object it needed even though that object had nothing to do with the actual SoD conflict. Restoring the specific missing object closed the gap without reopening the conflict.", "challenge": "You fixed a report and broke my process. How do I know the next fix won't break something else?", "challenge_model": "Because this time the correction was verified two ways: a risk analysis rerun confirming the SoD conflict stays closed, and a business tester actually executing the affected task before sign-off \u2014 not consultant certification alone. That combination is what should accompany every role change going forward, not just this one.", "gate": "The business wants the fix live today. Testing properly will take until tomorrow. How do you handle that conversation?", "gate_model": "Name the trade-off directly rather than absorbing the pressure silently: a same-day fix without business testing carries the same risk that caused this incident in the first place. Offer the fastest path that still includes a business tester's confirmation, even if that means a few hours' delay, and let the business decide with that trade-off stated plainly rather than assuming speed is always what they'd choose if they understood the risk."}, {"lab": 4, "book": "The Approval Nobody Sent", "domain": "MSMP Workflow (GRC Access Control)", "situation": "A request for a sample of rejected access requests comes back empty \u2014 every single access request in the last eighteen months shows as approved, with no exceptions.", "process": "Access requests route through an MSMP workflow stage to a designated approver; if the approver doesn't act within 48 hours, the request is meant to escalate.", "risk": "If the escalation path resolves an unanswered request as approved by default rather than escalating to another human, an access-approval control that looks fully operating is, in substance, granting access with no actual review at all.", "objective": "Confirm that access requests are resolved by an actual approver decision, and that any timeout path escalates to a person rather than defaulting to approval.", "design": "MSMP workflow stages use agent determination and BRF+ rules to route requests and handle non-response; a properly designed timeout path escalates to a named backup approver, and eventually to their manager, without ever auto-resolving to approved.", "population": "All access requests over the review period, categorized by resolution type: approved by a named approver's action, versus resolved via a timeout/fallback path.", "pop_source": "The MSMP workflow log table (or GRC AC's request history with resolution-type detail), queried directly rather than relying on the workflow's own summary status field.", "completeness": "Confirm the log table query covers the full review period and all workflow templates in use, not just the primary access-request template \u2014 multiple templates can exist for different request types.", "sampling": "Full population analysis of resolution type; a sample of individual requests resolved via timeout, reperformed against the actual configuration to confirm how the fallback behaved.", "evidence": "The resolution-type query output, the workflow stage configuration showing the fallback rule, and the training-environment test proving the redesigned escalation chain never auto-approves.", "exec": [{"title": "Part A \u2014 Query Resolution Types", "before": "Get read access to the workflow log table or its GRC AC reporting equivalent before starting.", "steps": ["Query the workflow log for all access requests in the review period.", "Categorize each by resolution type: explicit approver action vs. timeout/fallback resolution.", "Calculate what percentage of the total was resolved via fallback rather than a human decision."], "capture": "Resolution-type breakdown and the fallback percentage."}, {"title": "Part B \u2014 Trace the Stage Configuration", "before": "Identify which specific workflow stage and template is generating the fallback behavior before opening configuration.", "steps": ["Navigate to the MSMP workflow configuration for the affected stage.", "Locate the agent determination rule and its timeout/escalation setting.", "Determine exactly what happens when the timeout is reached \u2014 escalation to another approver, or automatic approval."], "capture": "Screenshot of the fallback configuration and a plain-language description of what it actually does on timeout."}, {"title": "Part C \u2014 Redesign and Test the Escalation Chain (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ workflow configuration copy.", "steps": ["Reconfigure the stage so a 48-hour timeout escalates to a named backup approver, not an automatic approval.", "Add a second escalation tier (e.g., to the backup approver's manager) for a further timeout.", "Submit a test request and deliberately do not respond at each stage to confirm it escalates correctly and never resolves to approved on its own."], "capture": "Test request results at each timeout stage, confirming escalation and no auto-approval outcome."}], "evaluation": "A correctly redesigned workflow should show the test request still pending or escalated at every timeout point \u2014 if it ever shows approved without a corresponding approver action in the log, the fallback has not been fully removed.", "conclusion_model": "The workflow's timeout path had been configured to auto-approve rather than escalate, which converted what looked like an approval control into a control that resolved every unanswered request as though someone had reviewed it, silently and by default.", "challenge": "The alternative was requests sitting for two weeks because approvers don't check their queue. Wasn't the fallback solving a real problem?", "challenge_model": "The underlying problem \u2014 slow approver response \u2014 was real and worth solving. The fallback solved it in a way that removed the control entirely rather than making it faster; escalating to a second human, as the redesign does, addresses the same speed problem without eliminating the review it depends on.", "gate": "Whoever configured this fallback made the change to relieve a genuine business pain point, with no sign-off on file. How do you classify this finding without it reading as an accusation of bad faith?", "gate_model": "Classify the finding by its effect on the control, not by the intent behind the change: an unauthorized configuration change that converted an approval control into a de facto no-review path is control-relevant regardless of why it was made. State plainly that the change appears well-intentioned, then separately state that well-intentioned changes to control-relevant configuration still need to go through change management and sign-off."}, {"lab": 5, "book": "Copied From Someone Else", "domain": "Access Control Provisioning", "situation": "A new hire was provisioned using a fast-track \"copy from reference user\" process. The reference user left their original team eight months earlier for a different role, and their access at the time of copying no longer reflected an appropriate profile.", "process": "New hires are commonly provisioned by copying an existing user's role assignments onto the new request rather than building the role list item by item.", "risk": "If the reference user's own access has drifted since their profile was last correct, every new hire copied from them inherits that drift \u2014 potentially including access combinations that would fail a current SoD check.", "objective": "Confirm that reference-user-based provisioning validates the reference user's own current access before copying it forward, and remediate any new hires who inherited inappropriate access.", "design": "The Access Request form's reference-user feature should trigger an automatic SoD validation against the reference user's current access at the moment of copying, not assume the reference user's profile is still correct.", "population": "All new-hire access requests over a defined period that used the reference-user copy feature, and the current access profile of each reference user involved.", "pop_source": "Access Request Management history filtered for requests using the reference-user field; each reference user's current role assignments pulled via SUIM or the GRC user access report.", "completeness": "Confirm the request history filter captures every request type that supports reference-user copying, not just the standard new-hire template \u2014 some request types may allow it without labeling it identically.", "sampling": "Full population review of recent new-hire requests using this method; each reference user's access checked in full, not sampled, since a single bad reference user can affect many downstream requests.", "evidence": "The request sample with reference users identified, each reference user's current-access SoD check result, and the corrected role builds for affected new hires with manager sign-off.", "exec": [{"title": "Part A \u2014 Pull the Reference-User Sample", "before": "Confirm your reporting access covers the Access Request Management module's full request history, not just pending requests.", "steps": ["Query recent new-hire access requests for those using the reference-user field.", "Record the reference user named on each request.", "Note the date each request was submitted and the reference user's role at that time if available."], "capture": "Sample list of requests with reference user, new hire, and request date."}, {"title": "Part B \u2014 Check Reference Users' Current Access", "before": "Run this against each unique reference user identified, not each request \u2014 a single reference user may appear on multiple requests.", "steps": ["Pull each reference user's current full role assignment list.", "Run a risk analysis against that role combination.", "Flag any reference user whose current access would not pass a fresh SoD check."], "capture": "List of reference users with SoD-flagged current access, and which new hires were copied from them."}, {"title": "Part C \u2014 Build the Validation Guardrail (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ copy of the Access Request workflow configuration.", "steps": ["Configure a validation step that triggers an automatic SoD check against the reference user's current access whenever the reference-user field is used.", "Configure the workflow to block or flag the request for review if that check fails.", "Submit a test request using a deliberately SoD-flagged reference user and confirm the guardrail triggers correctly."], "capture": "Screenshot of the guardrail configuration and the test request result showing the block/flag behavior."}], "evaluation": "The guardrail is working correctly only if a request using a clean reference user passes through normally while one using a flagged reference user is stopped or flagged \u2014 test both cases, not just the failing one.", "conclusion_model": "The reference-user copy feature was being used without any check on whether the reference user's own access was still appropriately scoped, which meant access drift in one person's profile was being propagated to every new hire copied from them, undetected.", "challenge": "We built the shortcut to save time during a hiring wave. Isn't rejecting it now just going to recreate the original slowdown?", "challenge_model": "The guardrail doesn't reject the shortcut \u2014 it adds one automated check to it. Because the SoD validation runs automatically rather than requiring a manual role-by-role build, the speed benefit of reference-user copying is preserved for the common case, and only the actual risk case (a drifted reference user) requires extra attention.", "gate": "The manager who approved the original flawed requests says he didn't know what \"copy from reference user\" meant technically when he signed off. How does that change how you frame the finding to him?", "gate_model": "It shifts the finding from an individual accountability question to a design and communication gap: approvers can't meaningfully review something built into a shortcut whose mechanics weren't explained to them. Frame the recommendation around making the request itself show the reference user's access plainly at approval time, not just around telling approvers to look more carefully."}, {"lab": 6, "book": "The Proposal Nobody Updated", "domain": "User & Role Administration / SU24 Authorization Defaults", "situation": "Building a role around a two-year-old custom transaction returns an almost-empty SU24 authorization default proposal, revealing that SU24 was never properly maintained when the transaction was built.", "process": "AP staff use a custom transaction to place holds on vendor payments pending investigation; roles including this transaction were each built manually, with no consistent authorization baseline to build from.", "risk": "Without a maintained SU24 proposal, every role builder guesses independently at the correct authorization objects, producing inconsistent roles \u2014 some too broad, some missing authorizations they should have, with no way to tell which from the configuration alone.", "objective": "Establish a correct, maintained SU24 default proposal for the custom transaction, and bring all existing roles containing it into alignment with that corrected baseline.", "design": "SU24 authorization default maintenance should be a required step whenever a custom transaction is built, owned jointly by the development and security teams, not left to whichever role builder encounters it first.", "population": "All roles currently containing the custom transaction, and their full authorization object lists for comparison.", "pop_source": "SU24 tables (USOBX_C / USOBT_C) for the custom transaction; PFCG role search or SUIM report for all roles containing that transaction code.", "completeness": "Confirm the role search captures roles where the transaction is included via a derived or composite role, not only roles where it's assigned directly.", "sampling": "Full population \u2014 every role containing the transaction must be compared, since the whole point is finding where they diverge from each other and from a correct baseline.", "evidence": "The empty/incomplete SU24 proposal screenshot, the side-by-side role authorization comparison, the corrected SU24 maintenance, and the rebuilt roles with the stray unrelated authorization removed.", "exec": [{"title": "Part A \u2014 Check SU24 Proposal Completeness", "before": "Confirm you know the exact custom transaction code in scope before starting.", "steps": ["Add the custom transaction to a test role in PFCG and observe the authorization default proposal returned.", "Check the SU24 tables directly for existing entries for this transaction.", "Determine whether the proposal is empty, partial, or simply outdated."], "capture": "Screenshot of the proposal result and the raw SU24 table entries (or absence of entries)."}, {"title": "Part B \u2014 Compare Authorization Objects Across Existing Roles", "before": "Pull the full role list containing the transaction before starting the comparison.", "steps": ["Export the full authorization object list for every role containing the custom transaction.", "Line them up side by side by job function to identify inconsistencies.", "Flag any authorization object present in one role but absent from an otherwise-similar role, and any object that appears unrelated to the transaction's actual function."], "capture": "Cross-role comparison table with flagged inconsistencies and any unrelated authorization objects found."}, {"title": "Part C \u2014 Maintain SU24 and Rebuild Roles (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ role copies; do not edit production roles directly.", "steps": ["Define the correct authorization objects and default values for the custom transaction in your training SU24 maintenance.", "Re-add the transaction to a training copy of each affected role and accept the corrected proposal.", "Remove any unrelated authorization object identified in Part B.", "Compare the rebuilt role's authorization objects against the corrected baseline to confirm consistency."], "capture": "Corrected SU24 entries, rebuilt role authorization lists, and confirmation the unrelated object was removed."}], "evaluation": "Success means every role containing the transaction now derives from the same corrected baseline and no longer contains the unrelated authorization object \u2014 inconsistency across roles doing the same job is itself evidence the fix isn't complete yet.", "conclusion_model": "SU24 had never been maintained for this custom transaction, so every role builder over two years had guessed independently at the correct authorizations, producing inconsistent access across users performing the same job and at least one authorization with no relationship to the transaction's actual function.", "challenge": "I'm a developer. I built what Finance asked for and tested that it worked. Why is SU24 my responsibility?", "challenge_model": "It's a fair question, and the honest answer is that it shouldn't be left as any one person's unstated responsibility \u2014 it should be a named step in the custom-transaction release checklist, owned jointly by development and security, so the next developer isn't left to guess whether it's their job either.", "gate": "The Basis lead is worried that adding an SU24 checkpoint to the release process will slow down releases the business is already impatient about. How do you propose the checkpoint without triggering that resistance?", "gate_model": "Propose it as a parallel checklist item reviewed alongside the existing release steps rather than a blocking gate that has to complete before anything else can proceed \u2014 the goal is ensuring it happens, not necessarily that it happens before every other step, and that distinction is often what changes a stakeholder's answer from no to yes."}, {"lab": 7, "book": "Resolved on the Report", "domain": "SoD Remediation & Mitigating Controls", "situation": "A real SoD conflict shows status \"Mitigated\" in the GRC report, with a named control and control owner attached \u2014 but the control owner has never performed the monthly review the mitigation describes, and doesn't know he was expected to.", "process": "When an SoD conflict can't be remediated by changing access, a mitigating control \u2014 typically a periodic management review \u2014 is assigned instead and the finding is marked resolved in the system.", "risk": "If assigning a mitigating control in the system is treated as the end of the remediation process rather than the start of an operating control, a conflict can show as resolved indefinitely while nothing is actually reviewing it.", "objective": "Confirm that every mitigating control marked as assigned is actually operating, with real evidence, and rebuild the assignment process so future mitigations can't close without an evidence requirement attached.", "design": "A mitigating control's status should require an attached evidence template and a review cadence the control owner has acknowledged in writing, not just a name and a description entered at the time of assignment.", "population": "All SoD conflicts currently showing status \"Mitigated,\" and the evidence (or absence of it) supporting each one.", "pop_source": "GRC Access Control's mitigated-risk report / mitigation assignment table, cross-referenced against whatever evidence repository (shared drive, ticketing system, email) the control owner is expected to use.", "completeness": "Confirm the mitigated-risk report includes conflicts mitigated at both the role level and the user level \u2014 some GRC configurations report these separately.", "sampling": "A sample of mitigated conflicts sufficient to establish a pattern (ten is a reasonable starting sample), expanded to the full population if the initial sample shows a meaningful failure rate.", "evidence": "The mitigated-risk report extract, the evidence-request correspondence with each control owner, the sample results table, and the redesigned mitigation-assignment process with its evidence template.", "exec": [{"title": "Part A \u2014 Pull the Mitigated-Risk Population", "before": "Confirm the report scope covers all business processes, not just the one where the original finding was noticed.", "steps": ["Run the mitigated-risk report from GRC Access Control.", "Record the mitigation description, assignment date, and named control owner for each conflict.", "Select an initial sample of ten mitigated conflicts across different control owners and departments."], "capture": "Sample list with mitigation description, assignment date, and control owner per conflict."}, {"title": "Part B \u2014 Request Evidence From Each Control Owner", "before": "Prepare a short, specific evidence request \u2014 asking for \"the review\" without specifying the period or format tends to get an unusable answer.", "steps": ["Contact each control owner in the sample and request documented evidence of the review for a specific recent period.", "Record whether evidence was provided, and if so, whether it actually demonstrates the review described in the mitigation.", "For control owners who can't produce evidence, ask directly whether they were aware of the review responsibility at all."], "capture": "Evidence-provided vs. evidence-absent count, and control owner awareness for each absent case."}, {"title": "Part C \u2014 Build the Evidence-Requirement Template (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ mitigation-assignment configuration or template library.", "steps": ["Design an evidence template specifying what documentation a mitigating control review must produce and how often.", "Configure the mitigation assignment process so a \"Mitigated\" status cannot be saved without the control owner acknowledging the evidence template and cadence in writing.", "Test the new process end to end with a sample mitigation assignment."], "capture": "The evidence template, the configured acknowledgment step, and the completed test assignment showing the requirement enforced."}], "evaluation": "If the sample shows even one mitigation without real evidence, treat it as indicating a systemic gap worth expanding the sample for \u2014 a single missing review is a finding; a pattern across control owners is a process design failure.", "conclusion_model": "Mitigating controls were being marked as assigned and closed in the system without any mechanism requiring the control owner to actually perform or evidence the review \u2014 meaning a meaningful fraction of \"resolved\" conflicts had no real control operating behind them at all.", "challenge": "I assigned the mitigating control and the system marked the finding closed. Wasn't that the correct process at the time?", "challenge_model": "It followed the process as it existed, which is exactly why the process itself needs to change rather than treating this as one person's oversight \u2014 assigning a control in the system should be the start of an operating control's evidence trail, not the definition of it being complete.", "gate": "The CFO wants to know how many other \"resolved\" findings across the whole GRC system might have the same problem. What do you tell him before the full population has been tested?", "gate_model": "Give him the honest, bounded answer: the sample tested showed a specific failure rate, which is a reasonable basis for concern but not yet a company-wide number, and testing the full mitigated population is the next step to get a defensible answer rather than an extrapolated guess."}, {"lab": 8, "book": "The Tile That Opened Everything", "domain": "Fiori Catalog & Space Security", "situation": "An AP clerk reports she can see a \"Mass Vendor Change\" tile on her Fiori Launchpad that she's never used and doesn't think she should have \u2014 tracing it reveals the backend access underneath is far broader than the visible tile suggests.", "process": "Fiori Launchpad content is organized into spaces, each tied to a business catalog and, through that, a PFCG role; last year's rollout grouped catalogs into a small number of broad spaces for go-live simplicity rather than mapping tightly to job function.", "risk": "Restricting tile visibility on the launchpad is cosmetic \u2014 the backend authorization for whatever the tile launches still comes from the PFCG role tied to the space, so a broad space can grant sensitive backend access to users who can't even see the corresponding tile.", "objective": "Confirm which users hold backend access to sensitive mass-change functions through their assigned space, independent of tile visibility, and restructure spaces so access maps to actual job function.", "design": "Sensitive catalogs (mass-change, mass-upload, and similar bulk functions) should sit in narrowly assigned spaces tested against real job requirements, separate from the broad spaces used for routine, low-risk apps.", "population": "All users assigned to any space containing a sensitive mass-change or mass-upload catalog, regardless of whether the corresponding tile is visible on their launchpad.", "pop_source": "Launchpad content role/space assignments (via Manage Launchpad Spaces or /UI2/FLPD_CUST), cross-referenced with the PFCG role tied to each space to identify the actual backend authorization granted.", "completeness": "Confirm the space-to-role mapping used for the query reflects the current configuration, not the mapping documented at original rollout \u2014 spaces are sometimes modified afterward without updating documentation.", "sampling": "Full population query for who holds the sensitive space; no sampling, since the goal is a precise headcount of actual exposure, not an estimate.", "evidence": "The tile-to-catalog-to-space-to-role trace, the full list of users holding the sensitive space, and the pilot test results confirming the corrected space structure preserves routine access.", "exec": [{"title": "Part A \u2014 Trace the Tile to Its Space and Role", "before": "Start from the specific tile reported, not a general catalog list.", "steps": ["Locate the reported tile in the Launchpad Designer and identify its parent catalog.", "Identify which space(s) include that catalog.", "Identify the PFCG role tied to that space and its authorization objects for the mass-change transaction."], "capture": "The full trace: tile \u2192 catalog \u2192 space \u2192 role \u2192 backend authorization."}, {"title": "Part B \u2014 Query Who Holds the Sensitive Space", "before": "Confirm you're querying space assignment, not tile visibility \u2014 they are configured separately.", "steps": ["Query all users assigned the space identified in Part A.", "Cross-reference each user's actual job function against whether they need the sensitive mass-change access.", "Produce a headcount of users with unnecessary backend exposure."], "capture": "Full user list with space assignment, job function, and necessity determination."}, {"title": "Part C \u2014 Rebuild the Space Structure and Pilot Test (Training Namespace)", "before": "Work in your assigned ZZ_TRAIN_ launchpad configuration copy.", "steps": ["Create a new, narrowly scoped space containing only the sensitive mass-change/mass-upload catalogs.", "Reassign only the users identified as needing that access to the new space and role.", "Confirm the broad space, now stripped of the sensitive catalog, still provides the routine apps unaffected users need.", "Run a pilot test with a small user group before planning full rollout."], "capture": "The new space configuration, the reassignment list, and pilot test confirmation that routine access was preserved."}], "evaluation": "A correct rebuild results in exactly the users who need mass-change access holding the narrow space, while every other user's routine apps remain unaffected \u2014 any pilot tester reporting a missing routine app means the split removed something it shouldn't have.", "conclusion_model": "Tile-level visibility restrictions had been assumed sufficient during rollout, but the backend authorization for sensitive mass-change functions was still granted broadly through the space's PFCG role \u2014 meaning dozens of users held real backend access to a function almost none of them could even see or knew they had.", "challenge": "The last time we changed launchpad content company-wide, we spent two weeks fielding tickets from people who lost apps they actually needed. How is this time different?", "challenge_model": "This time the sensitive catalog is being separated out into its own space while the broad space keeps everything else unchanged, rather than restructuring the whole launchpad \u2014 and a pilot group tests the change before full rollout, which the previous change skipped. Both differences directly target what caused the prior rollout's ticket volume.", "gate": "The clerk who reported this could just as easily have ignored the tile she didn't recognize. How do you make that kind of reporting more likely to happen again?", "gate_model": "Make sure there's a visible, low-friction way for any user to flag something that looks wrong, and \u2014 just as important \u2014 follow up with the reporter to tell them what happened as a result, so the lesson for them and their colleagues is that reporting something unusual leads somewhere, not that it disappears into a ticket queue."}];
+  var GRC_SUPABASE_URL = "https://blfgwysgekfqhcafofhe.supabase.co";
+  var GRC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI";
+  var CONSOLE_URL = "https://REPLACE-WITH-GRC-SECURITY-STUDENT-CONSOLE-URL.vercel.app/";
+  var ELECTIVE_COURSE_ID = "grc_security_primarylab"; // kept for schema symmetry; this console has one course today
+
+  var grc = window.supabase.createClient(GRC_SUPABASE_URL, GRC_SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  });
+
+  var userEmail = null;
+  var currentLab = 1;
+  var currentMode = 'guide'; // 'guide' or 'lab'
+
+  // ---------- localStorage: granular per-lab UI state (checkboxes, drafts) ----------
+  var STORAGE_KEY = 'grcSecurityCombined_v1';
+  function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; } }
+  function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  var state = loadState();
+  function labState(labNum){
+    var key = 'lab' + labNum;
+    if(!state[key]) state[key] = { steps:{}, conclusion:'', challengeResponse:'', gateResponse:'', complete:false };
+    return state[key];
+  }
+
+  function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  // ---------- AUTH VIEW SWITCHING ----------
+  function showView(name){
+    ['login','signup','forgot','reset','noenroll','checking'].forEach(function(v){
+      document.getElementById('view-' + v).classList.add('hidden');
+    });
+    document.getElementById('wrap-auth').classList.remove('hidden');
+    document.getElementById('wrap-app').classList.add('hidden');
+    document.getElementById('view-' + name).classList.remove('hidden');
+    ['login-msg','signup-msg','forgot-msg','reset-msg'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.innerHTML = '';
+    });
+  }
+  function msg(id, text, kind){ document.getElementById(id).innerHTML = '<div class="auth-msg ' + kind + '">' + text + '</div>'; }
+  function setBusy(btnId, busy, label){
+    var b = document.getElementById(btnId);
+    b.disabled = busy;
+    if(label) b.textContent = busy ? label : (b.dataset.orig || b.textContent);
+  }
+
+  // ---------- AUTH ACTIONS ----------
+  async function doLogin(){
+    var email = document.getElementById('login-email').value.trim();
+    var pass = document.getElementById('login-pass').value;
+    if(!email || !pass){ msg('login-msg','Enter your email and password.','error'); return; }
+    setBusy('login-btn', true, 'Signing in…');
+    var res = await grc.auth.signInWithPassword({ email: email, password: pass });
+    setBusy('login-btn', false, 'Sign In');
+    if(res.error){ msg('login-msg', res.error.message, 'error'); return; }
+    await afterAuth();
+  }
+
+  async function doSignup(){
+    var name = document.getElementById('signup-name').value.trim();
+    var email = document.getElementById('signup-email').value.trim();
+    var pass = document.getElementById('signup-pass').value;
+    if(!name || !email || !pass){ msg('signup-msg','Fill in all fields.','error'); return; }
+    if(pass.length < 8){ msg('signup-msg','Password must be at least 8 characters.','error'); return; }
+    setBusy('signup-btn', true, 'Creating account…');
+    var res = await grc.auth.signUp({ email: email, password: pass, options: { data: { full_name: name } } });
+    setBusy('signup-btn', false, 'Create Account & Sign In');
+    if(res.error){
+      var already = /already registered|already exists|user already registered/i.test(res.error.message || '');
+      if(already){
+        msg('signup-msg', "Looks like you already have a TIB Systems account (from another program). Try signing in below with your existing password, or use \"Forgot your password?\"", 'info');
+      } else {
+        msg('signup-msg', res.error.message, 'error');
+      }
+      return;
+    }
+    if(res.data && !res.data.session){
+      msg('signup-msg', "Account created. Check your email to confirm your address, then come back and sign in.", 'ok');
+      return;
+    }
+    await afterAuth();
+  }
+
+  async function doForgot(){
+    var email = document.getElementById('forgot-email').value.trim();
+    if(!email){ msg('forgot-msg','Enter your email.','error'); return; }
+    setBusy('forgot-btn', true, 'Sending…');
+    var res = await grc.auth.resetPasswordForEmail(email, { redirectTo: CONSOLE_URL });
+    setBusy('forgot-btn', false, 'Send Reset Link');
+    if(res.error){ msg('forgot-msg', res.error.message, 'error'); return; }
+    msg('forgot-msg', "If that email has an account, a reset link is on its way. Check your inbox.", 'ok');
+  }
+
+  async function doReset(){
+    var p1 = document.getElementById('reset-pass').value;
+    var p2 = document.getElementById('reset-pass2').value;
+    if(p1.length < 8){ msg('reset-msg','Password must be at least 8 characters.','error'); return; }
+    if(p1 !== p2){ msg('reset-msg','Passwords do not match.','error'); return; }
+    setBusy('reset-btn', true, 'Saving…');
+    var res = await grc.auth.updateUser({ password: p1 });
+    setBusy('reset-btn', false, 'Set Password & Sign In');
+    if(res.error){ msg('reset-msg', res.error.message, 'error'); return; }
+    await afterAuth();
+  }
+
+  async function doSignOut(){
+    await grc.auth.signOut();
+    location.hash = '';
+    showView('login');
+  }
+
+  // ---------- ENROLLMENT + APP BOOTSTRAP ----------
+  async function afterAuth(){
+    showView('checking');
+    document.getElementById('view-checking').classList.remove('hidden');
+
+    var userRes = await grc.auth.getUser();
+    var user = userRes.data ? userRes.data.user : null;
+    if(!user){ showView('login'); return; }
+
+    try{
+      await grc.from('grc_enrollments').update({ user_id: user.id }).eq('email', user.email.toLowerCase()).is('user_id', null);
+    }catch(e){ /* non-fatal */ }
+
+    var enrRes = await grc.from('grc_enrollments')
+      .select('status')
+      .or('user_id.eq.' + user.id + ',email.eq.' + encodeURIComponent(user.email))
+      .maybeSingle();
+
+    if(enrRes.error || !enrRes.data || enrRes.data.status !== 'active'){
+      showView('noenroll');
+      return;
+    }
+
+    userEmail = user.email;
+    document.getElementById('wrap-auth').classList.add('hidden');
+    document.getElementById('wrap-app').classList.remove('hidden');
+    document.getElementById('who-email').textContent = userEmail;
+    await pullRemoteProgress();
+    render();
+  }
+
+  // ---------- PROGRESS SYNC (grc_progress) ----------
+  async function pullRemoteProgress(){
+    if(!userEmail) return;
+    try{
+      var res = await grc.from('grc_progress').select('module_id').eq('course_id', ELECTIVE_COURSE_ID);
+      if(res.error) throw res.error;
+      var completed = {};
+      (res.data || []).forEach(function(r){ completed[r.module_id] = true; });
+      LABS.forEach(function(lab){
+        var ls = labState(lab.lab);
+        if(completed['lab' + lab.lab]) ls.complete = true;
+      });
+      saveState(state);
+      document.getElementById('sync-status').textContent = 'Synced as ' + userEmail;
+      document.getElementById('sync-status').className = 'sync-status on';
+    }catch(e){
+      console.warn('Could not pull remote progress:', e);
+      document.getElementById('sync-status').textContent = 'Progress saved on this device only';
+    }
+  }
+
+  async function pushLabCompletion(labNum, complete){
+    if(!userEmail) return;
+    try{
+      if(complete){
+        await grc.from('grc_progress').upsert(
+          { email: userEmail, course_id: ELECTIVE_COURSE_ID, module_id: 'lab' + labNum, completed_at: new Date().toISOString() },
+          { onConflict: 'email,course_id,module_id' }
+        );
+      } else {
+        await grc.from('grc_progress').delete().eq('email', userEmail).eq('course_id', ELECTIVE_COURSE_ID).eq('module_id', 'lab' + labNum);
+      }
+    }catch(e){ console.warn('Could not sync completion:', e); }
+  }
+
+  // ---------- MODE + NAV ----------
+  function setMode(m){ currentMode = m; render(); }
+
+  function renderNav(){
+    var nav = document.getElementById('lab-nav');
+    nav.innerHTML = '';
+    LABS.forEach(function(lab){
+      var ls = labState(lab.lab);
+      var li = document.createElement('li');
+      var btn = document.createElement('button');
+      btn.className = (lab.lab === currentLab ? 'active ' : '') + (ls.complete ? 'done' : '');
+      btn.innerHTML = '<span class="num">' + lab.lab + '</span><span class="dom">' + esc(lab.domain) + '</span><span class="check"></span>';
+      btn.onclick = function(){ currentLab = lab.lab; render(); window.scrollTo(0,0); };
+      li.appendChild(btn);
+      nav.appendChild(li);
+    });
+    var doneCount = LABS.filter(function(l){ return labState(l.lab).complete; }).length;
+    document.getElementById('progress-count').textContent = doneCount + ' of ' + LABS.length;
+    document.getElementById('progress-fill').style.width = (doneCount / LABS.length * 100) + '%';
+    document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
+    document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
+  }
+
+  function render(){
+    renderNav();
+    if(currentMode === 'guide') renderGuideMain(); else renderLabMain();
+  }
+
+  // ---------- COURSE GUIDE MODE ----------
+  function renderGuideMain(){
+    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0];
+    var main = document.getElementById('main');
+    var html = '';
+    html += '<div class="rules-banner sans">';
+    html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
+    html += '<div><b>Planning card before transaction code.</b> If you can\'t state your population, risk, and control objective, you\'re not ready to open a transaction yet.</div>';
+    html += '</div>';
+    html += '<div class="lab-header"><p class="eyebrow">Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2></div>';
+
+    html += '<div class="guide-box"><b class="label">Read Before Working This Lab</b><p>' + esc(lab.situation) + '</p></div>';
+
+    html += '<div class="guide-sub">Work Through, In Order</div>';
+    html += '<ul class="guide-steps">';
+    html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 reasoned through, then fields 11&ndash;12 executed live on the training server.</li>';
+    html += '<li>Independently, write your own Field 13 conclusion before revealing the Primary Lab\'s model conclusion.</li>';
+    html += '<li>Independently, answer the Field 14 reviewer challenge — &ldquo;' + esc(lab.challenge) + '&rdquo; — before revealing the model response.</li>';
+    html += '<li>Work Parts A, B, and C of the Execution Steps yourself, end to end, in your assigned ZZ_TRAIN_ practice namespace.</li>';
+    html += '<li>Be ready for the facilitator\'s Field 15 gate question once your independent run is complete.</li>';
+    html += '</ul>';
+
+    html += '<div class="guide-sub">You Should Be Able To</div>';
+    html += '<ul class="guide-steps">';
+    html += '<li>Reason through this domain\'s failure pattern using the full planning card (Situation through Evidence Plan), not just the execution steps.</li>';
+    html += '<li>Execute the lab\'s population pull, investigation, and Part C build entirely on your own, without asking what to do next.</li>';
+    html += '<li>Write a conclusion before looking at the model, and compare your own reasoning against it honestly.</li>';
+    html += '<li>Answer the reviewer challenge and, when asked, the facilitator-only gate question for this Lab.</li>';
+    html += '</ul>';
+
+    html += '<div class="guide-deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written conclusion for ' + esc(lab.book) + ' — in your own words, completed before revealing the Primary Lab\'s model conclusion. Then answer the facilitator-only gate question the same way, and compare both against the model answers with your facilitator.</p></div>';
+
+    html += '<button class="guide-goto" onclick="setMode(\'lab\')">Open This Lab &rarr;</button>';
+
+    main.innerHTML = html;
+  }
+
+  // ---------- PRIMARY LAB MODE ----------
+  function execPartHtml(part, pi, ls){
+    var html = '';
+    html += '<div class="exec-part"><h4>' + esc(part.title) + '</h4>';
+    html += '<p class="before"><b>Before you start:</b> ' + esc(part.before) + '</p><ol>';
+    part.steps.forEach(function(s, si){
+      var stepKey = pi + '_' + si;
+      var checked = ls.steps[stepKey] ? 'checked' : '';
+      var doneClass = ls.steps[stepKey] ? 'done-text' : '';
+      html += '<li><label><input type="checkbox" data-step="' + stepKey + '" ' + checked + '><span class="' + doneClass + '">' + esc(s) + '</span></label></li>';
+    });
+    html += '</ol><p class="capture sans"><b>What to capture:</b> ' + esc(part.capture) + '</p></div>';
+    return html;
+  }
+
+  function renderLabMain(){
+    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0];
+    var ls = labState(lab.lab);
+    var main = document.getElementById('main');
+    var html = '';
+
+    html += '<div class="rules-banner sans">';
+    html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
+    html += '<div><b>Planning card before transaction code.</b> If you can\'t state your population, risk, and control objective, you\'re not ready to open a transaction yet.</div>';
+    html += '</div>';
+
+    html += '<div class="lab-header"><p class="eyebrow">Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2>';
+    html += '<p class="companion">Course Guide for this Lab is one click away in the sidebar above.</p></div>';
+
+    var fields = [
+      ['1','Situation',lab.situation], ['2','Process',lab.process], ['3','Business Risk',lab.risk],
+      ['4','Control Objective',lab.objective], ['5','Control Design',lab.design],
+      ['6','Population Definition',lab.population], ['7','Population Source',lab.pop_source],
+      ['8','Completeness and Accuracy',lab.completeness], ['9','Sampling Approach',lab.sampling],
+      ['10','Evidence Plan',lab.evidence]
+    ];
+    fields.forEach(function(f){
+      html += '<div class="field"><h3><span class="fn">' + f[0] + '</span> ' + f[1] + '</h3><p>' + esc(f[2]) + '</p></div>';
+    });
+
+    html += '<div class="field"><h3><span class="fn">11</span> Execution Steps</h3>';
+    html += '<div class="callout"><b class="sans">HANDS-ON — PRACTICE NAMESPACE</b>Build and save only in your assigned ZZ_TRAIN_ role/ruleset/workflow copy. Never edit a production role, ruleset, or workflow during this lab.</div>';
+    lab.exec.forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
+    html += '</div>';
+
+    html += '<div class="field"><h3><span class="fn">12</span> Evaluation</h3><p>' + esc(lab.evaluation) + '</p></div>';
+
+    html += '<div class="field"><h3><span class="fn">13</span> Conclusion</h3>';
+    html += '<p class="sans" style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;"><b>Your conclusion</b> — write it in your own words before revealing the model.</p>';
+    html += '<textarea id="conclusion-input" placeholder="Type your conclusion here...">' + esc(ls.conclusion) + '</textarea>';
+    html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model conclusion</button>';
+    html += '<div class="model-box' + (ls.conclusionRevealed ? ' shown' : '') + '" id="conclusion-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.conclusion_model) + '</p></div>';
+    html += '</div>';
+
+    html += '<div class="field"><h3><span class="fn">14</span> Reviewer Challenge</h3>';
+    html += '<div class="challenge-quote">&ldquo;' + esc(lab.challenge) + '&rdquo;</div>';
+    html += '<textarea id="challenge-input" placeholder="Type your response here...">' + esc(ls.challengeResponse) + '</textarea>';
+    html += '<button class="reveal-btn" id="challenge-reveal-btn">Reveal model response</button>';
+    html += '<div class="model-box' + (ls.challengeRevealed ? ' shown' : '') + '" id="challenge-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.challenge_model) + '</p></div>';
+    html += '</div>';
+
+    html += '<div class="gate-section"><details class="gate-toggle" ' + (ls.gateOpened ? 'open' : '') + ' id="gate-details">';
+    html += '<summary class="sans">Field 15 — Facilitator-Only Gate Question (click to expand once your independent run is complete)</summary>';
+    html += '<div class="warn sans">Facilitators: ask this after the trainee has completed the lab independently.</div>';
+    html += '<div class="gq">&ldquo;' + esc(lab.gate) + '&rdquo;</div>';
+    html += '<textarea id="gate-input" placeholder="Trainee\'s spoken answer, noted here...">' + esc(ls.gateResponse) + '</textarea>';
+    html += '<button class="gate-btn" id="gate-reveal-btn">Reveal model answer</button>';
+    html += '<div class="model-box' + (ls.gateRevealed ? ' shown' : '') + '" id="gate-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.gate_model) + '</p></div>';
+    html += '</details></div>';
+
+    html += '<div class="complete-row">';
+    html += '<span class="status' + (ls.complete ? ' done' : '') + ' sans">' + (ls.complete ? '✓ Lab marked complete' : 'Not yet marked complete') + '</span>';
+    html += '<button class="action-btn" id="complete-btn">' + (ls.complete ? 'Mark as Not Complete' : 'Mark Lab Complete') + '</button>';
+    html += '</div>';
+
+    main.innerHTML = html;
+    wireLabInteractions(lab, ls);
+  }
+
+  function wireLabInteractions(lab, ls){
+    document.querySelectorAll('input[type=checkbox][data-step]').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        ls.steps[cb.dataset.step] = cb.checked;
+        saveState(state);
+        var span = cb.parentElement.querySelector('span');
+        span.className = cb.checked ? 'done-text' : '';
+      });
+    });
+    document.getElementById('conclusion-input').addEventListener('input', function(e){ ls.conclusion = e.target.value; saveState(state); });
+    document.getElementById('conclusion-reveal-btn').addEventListener('click', function(){
+      ls.conclusionRevealed = true; saveState(state);
+      document.getElementById('conclusion-model').classList.add('shown');
+    });
+    document.getElementById('challenge-input').addEventListener('input', function(e){ ls.challengeResponse = e.target.value; saveState(state); });
+    document.getElementById('challenge-reveal-btn').addEventListener('click', function(){
+      ls.challengeRevealed = true; saveState(state);
+      document.getElementById('challenge-model').classList.add('shown');
+    });
+    document.getElementById('gate-details').addEventListener('toggle', function(e){ ls.gateOpened = e.target.open; saveState(state); });
+    document.getElementById('gate-input').addEventListener('input', function(e){ ls.gateResponse = e.target.value; saveState(state); });
+    document.getElementById('gate-reveal-btn').addEventListener('click', function(){
+      ls.gateRevealed = true; saveState(state);
+      document.getElementById('gate-model').classList.add('shown');
+    });
+    document.getElementById('complete-btn').addEventListener('click', function(){
+      ls.complete = !ls.complete; saveState(state);
+      pushLabCompletion(lab.lab, ls.complete);
+      render();
+    });
+  }
+
+  // ---------- BOOTSTRAP ----------
+  grc.auth.onAuthStateChange(function(event){
+    if(event === 'PASSWORD_RECOVERY'){
+      document.getElementById('wrap-auth').classList.remove('hidden');
+      document.getElementById('wrap-app').classList.add('hidden');
+      showView('reset');
+    }
+  });
+
+  async function bootstrap(){
+    if(location.hash.indexOf('type=recovery') !== -1){ return; }
+    var sess = await grc.auth.getSession();
+    var session = sess.data ? sess.data.session : null;
+    if(session){ await afterAuth(); } else { showView('login'); }
+  }
+
+  (function handleRecoveryHash(){
+    if(location.hash.indexOf('type=recovery') !== -1){
+      var recoveryClient = window.supabase.createClient(GRC_SUPABASE_URL, GRC_SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      recoveryClient.auth.onAuthStateChange(function(event, session){
+        if(event === 'PASSWORD_RECOVERY' || (session && location.hash.indexOf('type=recovery') !== -1)){
+          grc = recoveryClient;
+          document.getElementById('wrap-auth').classList.remove('hidden');
+          showView('reset');
+        }
+      });
+    }
+  })();
+
+  bootstrap();
+</script>
+</body>
+</html>
