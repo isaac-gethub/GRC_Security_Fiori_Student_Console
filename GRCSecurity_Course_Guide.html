@@ -52,6 +52,15 @@
   .go-link { display: inline-block; margin-top: 8px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: var(--navy); text-decoration: none; border-bottom: 1px dotted var(--navy); }
   .go-link:hover { color: var(--gold); border-color: var(--gold); }
 
+  .track-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 28px; }
+  .track-tabs button {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 700;
+    background: var(--panel); border: 1.5px solid var(--line); color: var(--ink-soft);
+    padding: 9px 16px; border-radius: 20px; cursor: pointer; transition: all 0.15s ease;
+  }
+  .track-tabs button:hover { border-color: var(--gold); color: var(--navy); }
+  .track-tabs button.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+
   @media (max-width: 600px) {
     .top h1 { font-size: 24px; }
     .rules-banner { flex-direction: column; gap: 10px; }
@@ -80,6 +89,8 @@
     <div><b>Planning card before transaction code.</b> If you can't state what's broken, why it matters, and what the fix needs to look like, you're not ready to open a transaction yet.</div>
   </div>
 
+  <div class="track-tabs sans" id="track-tabs"></div>
+
   <table class="seq-table">
     <thead><tr><th>Lab</th><th>Domain</th></tr></thead>
     <tbody id="seq-body"></tbody>
@@ -94,11 +105,33 @@ const SUPABASE_URL = 'https://blfgwysgekfqhcafofhe.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI';
 const sbPublic = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+const TRACK_META = {
+  A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.' },
+  B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.' },
+  C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.' },
+  D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.' }
+};
+let currentTrack = 'A';
+
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function renderTrackTabs() {
+  const wrap = document.getElementById('track-tabs');
+  wrap.innerHTML = '';
+  ['A','B','C','D'].forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = (t === currentTrack ? 'active' : '');
+    btn.innerHTML = TRACK_META[t].name;
+    btn.onclick = () => { if (t !== currentTrack) { currentTrack = t; loadAndRender(); } };
+    wrap.appendChild(btn);
+  });
+  document.querySelector('.rules-banner div:last-child').innerHTML = '<b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner;
+}
 
 function renderAll(LABS) {
 
 const seqBody = document.getElementById('seq-body');
+seqBody.innerHTML = '';
 LABS.forEach(lab => {
   const tr = document.createElement('tr');
   tr.innerHTML = '<td>Lab ' + lab.lab + '</td><td>' + esc(lab.domain) + '</td>';
@@ -117,8 +150,8 @@ LABS.forEach(lab => {
 
   html += '<h3 class="sub">Work Through, In Order</h3>';
   html += '<ul class="steps">';
-  html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 diagnosed through, then fields 11&ndash;12 executed live on the training server.</li>';
-  html += '<li>Independently, write your own Field 13 resolution write-up before revealing the Primary Lab\'s model resolution.</li>';
+  html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 worked through, then fields 11&ndash;12 executed live on the training server.</li>';
+  html += '<li>Independently, write your own Field 13 write-up before revealing the Primary Lab\'s model write-up.</li>';
   html += '<li>Independently, answer the Field 14 stakeholder pushback &mdash; &ldquo;' + esc(lab.pushback) + '&rdquo; &mdash; before revealing the model response.</li>';
   html += '<li>Work Parts A, B, and C of the Execution Steps yourself, end to end, in your assigned ZZ_TRAIN_ practice namespace.</li>';
   html += '<li>Be ready for the facilitator\'s Field 15 escalation-conversation question once your independent run is complete.</li>';
@@ -126,13 +159,13 @@ LABS.forEach(lab => {
 
   html += '<h3 class="sub">You Should Be Able To</h3>';
   html += '<ul class="steps">';
-  html += '<li>Diagnose this domain\'s failure pattern using the full planning card (Ticket through Verification Evidence), not just the execution steps.</li>';
-  html += '<li>Execute the lab\'s scope pull, diagnosis, and Part C build entirely on your own, without asking what to do next.</li>';
-  html += '<li>Write a resolution write-up before looking at the model, and compare your own diagnosis against it honestly.</li>';
+  html += '<li>Work through this domain\'s core challenge using the full planning card (fields 1 through 10), not just the execution steps.</li>';
+  html += '<li>Execute the lab\'s fields 1&ndash;10 analysis and Part C build entirely on your own, without asking what to do next.</li>';
+  html += '<li>Write a Field 13 write-up before looking at the model, and compare your own thinking against it honestly.</li>';
   html += '<li>Answer the stakeholder pushback and, when asked, the facilitator-only escalation question for this Lab.</li>';
   html += '</ul>';
 
-  html += '<div class="deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written resolution write-up for ' + esc(lab.book) + ' &mdash; in your own words, completed before revealing the Primary Lab\'s model resolution. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</p></div>';
+  html += '<div class="deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written Field 13 write-up for ' + esc(lab.book) + ' &mdash; in your own words, completed before revealing the Primary Lab\'s model write-up. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</p></div>';
 
   html += '<a class="go-link" href="GRCSecurity_Primary_Lab.html">Open Lab ' + lab.lab + ' in the Primary Lab &rarr;</a>';
 
@@ -141,13 +174,19 @@ LABS.forEach(lab => {
 });
 }
 
-(async function start() {
+async function loadAndRender() {
+  renderTrackTabs();
   const labsDiv = document.getElementById('labs');
   labsDiv.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
   try {
     if (!sbPublic) throw new Error('Supabase client unavailable');
-    const { data, error } = await sbPublic.from('grc_lab_content').select('*').order('lab_number');
+    const { data, error } = await sbPublic.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
     if (error) throw error;
+    if (!data || data.length === 0) {
+      document.getElementById('seq-body').innerHTML = '';
+      labsDiv.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No labs published in this track yet — check back soon, or switch to another track above.</p>';
+      return;
+    }
     const LABS = data.map(r => ({
       lab: r.lab_number, book: r.book, domain: r.domain, ticket: r.ticket, process: r.process,
       impact: r.impact, objective: r.objective, design: r.design, scope: r.scope,
@@ -161,7 +200,9 @@ LABS.forEach(lab => {
     console.error('Failed to load lab content:', e);
     labsDiv.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content. Check your connection and reload the page.</p>';
   }
-})();
+}
+
+loadAndRender();
 </script>
 </body>
 </html>

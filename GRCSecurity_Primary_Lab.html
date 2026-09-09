@@ -48,6 +48,14 @@
 
   .progress-block { padding: 18px 24px; border-bottom: 1px solid rgba(255,255,255,0.12); font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
   .progress-block .label { font-size: 12px; color: #B9B2A0; margin-bottom: 8px; display: flex; justify-content: space-between; }
+  .track-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 12px 12px 4px; }
+  .track-tabs button {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #C9C3B4;
+    font-size: 11.5px; font-weight: 700; padding: 8px 6px; border-radius: 4px; cursor: pointer;
+    line-height: 1.25; text-align: center; transition: background 0.15s ease, color 0.15s ease;
+  }
+  .track-tabs button:hover { background: rgba(255,255,255,0.12); }
+  .track-tabs button.active { background: var(--gold); border-color: var(--gold); color: var(--navy-deep); }
   .progress-track { height: 6px; background: rgba(255,255,255,0.14); border-radius: 4px; overflow: hidden; }
   .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.4s ease; }
 
@@ -181,6 +189,7 @@
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       <div id="sync-status" class="sync-status"></div>
     </div>
+    <div class="track-tabs sans" id="track-tabs"></div>
     <ul class="lab-nav" id="lab-nav"></ul>
     <div class="footer-link">
       <a href="GRCSecurity_Course_Guide.html">&larr; Open the Course Guide</a>
@@ -192,7 +201,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 let LABS = [];
+let currentTrack = 'A';
 const STORAGE_KEY = 'grcSecurityPrimaryLab_v1';
+
+const TRACK_META = {
+  A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
+       fields: { 1: 'The Requirement', 4: 'Design Objective', 5: 'Target Design', 9: 'Design Approach', 10: 'Deliverable Evidence', 13: 'Blueprint Write-up' } },
+  B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
+       fields: { 1: 'The Spec', 4: 'Build Objective', 5: 'Target Configuration', 9: 'Build Approach', 10: 'Sign-off Evidence', 13: 'Configuration Write-up' } },
+  C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
+       fields: { 1: 'The Scenario', 4: 'Cutover Objective', 5: 'The Plan', 9: 'Execution Approach', 10: 'Proof It Worked', 13: 'Outcome Write-up' } },
+  D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
+       fields: { 1: 'The Ticket', 4: 'Fix Objective', 5: 'Target Design', 9: 'Fix Approach', 10: 'Verification Evidence', 13: 'Resolution' } }
+};
 
 /* ---------- Trainee Console SSO + progress sync ----------
    Standalone by default: this app works fully offline via localStorage
@@ -200,8 +221,9 @@ const STORAGE_KEY = 'grcSecurityPrimaryLab_v1';
    Trainee Console, the Console appends #sso_at=<access_token>&sso_rt=<refresh_token>
    to the launch URL; when present, this establishes a Supabase session and
    syncs "Mark Lab Complete" to ctm_electives_progress (course_id =
-   'grc_security_primarylab', module_id = 'lab1'..'lab8'), the same pattern
-   already used for the Thornfield Primary Lab elective (scc_primarylab).
+   'grc_security_primarylab', module_id = 'A_lab1'..'D_lab8', prefixed per
+   track so completion in one track never collides with another), the same
+   pattern already used for the Thornfield Primary Lab elective (scc_primarylab).
    If no token is present and no session was previously established here,
    the app runs local-only — nothing about the core lab experience depends
    on this layer. */
@@ -212,7 +234,7 @@ const sbPublic = (window.supabase && window.supabase.createClient) ? window.supa
 
 async function loadLabContent() {
   if (!sbPublic) throw new Error('Supabase client unavailable');
-  const { data, error } = await sbPublic.from('grc_lab_content').select('*').order('lab_number');
+  const { data, error } = await sbPublic.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
   if (error) throw error;
   LABS = data.map(r => ({
     lab: r.lab_number, book: r.book, domain: r.domain, ticket: r.ticket, process: r.process,
@@ -225,7 +247,7 @@ async function loadLabContent() {
 let sb = null;
 let syncEmail = null;
 
-function labModuleId(labNum) { return 'lab' + labNum; }
+function labModuleId(labNum) { return currentTrack + '_lab' + labNum; }
 
 function setSyncStatus(text, on) {
   const el = document.getElementById('sync-status');
@@ -317,16 +339,52 @@ function loadState() {
 function saveState(state) { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 let state = loadState();
 function labState(labNum) {
-  const key = 'lab' + labNum;
+  const key = currentTrack + '_lab' + labNum;
   if (!state[key]) state[key] = { steps: {}, conclusion: '', challengeResponse: '', gateResponse: '', complete: false };
   return state[key];
 }
 
 let currentLab = 1;
 
+function renderTrackTabs() {
+  const wrap = document.getElementById('track-tabs');
+  wrap.innerHTML = '';
+  ['A','B','C','D'].forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = (t === currentTrack ? 'active' : '');
+    btn.innerHTML = TRACK_META[t].name;
+    btn.onclick = async () => {
+      if (t === currentTrack) return;
+      currentTrack = t;
+      currentLab = 1;
+      const main = document.getElementById('main');
+      if (main) main.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
+      try {
+        await loadLabContent();
+      } catch (e) {
+        console.error('Failed to load lab content:', e);
+        if (main) main.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content for this track. Check your connection and reload the page.</p>';
+        return;
+      }
+      render();
+      window.scrollTo(0,0);
+    };
+    wrap.appendChild(btn);
+  });
+}
+
 function renderNav() {
+  renderTrackTabs();
   const nav = document.getElementById('lab-nav');
   nav.innerHTML = '';
+  if (LABS.length === 0) {
+    const li = document.createElement('li');
+    li.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No labs published in this track yet.</p>';
+    nav.appendChild(li);
+    document.getElementById('progress-count').textContent = '0 of 0';
+    document.getElementById('progress-fill').style.width = '0%';
+    return;
+  }
   LABS.forEach(lab => {
     const ls = labState(lab.lab);
     const li = document.createElement('li');
@@ -345,28 +403,34 @@ function renderNav() {
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function renderMain() {
-  const lab = LABS.find(l => l.lab === currentLab);
-  const ls = labState(lab.lab);
   const main = document.getElementById('main');
+  if (LABS.length === 0) {
+    main.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No labs published in this track yet — check back soon, or switch to another track above.</p>';
+    return;
+  }
+  const lab = LABS.find(l => l.lab === currentLab) || LABS[0];
+  currentLab = lab.lab;
+  const ls = labState(lab.lab);
+  const fm = TRACK_META[currentTrack].fields;
 
   let html = '';
   html += '<div class="rules-banner sans">';
   html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
-  html += '<div><b>Planning card before transaction code.</b> If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.</div>';
+  html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
   html += '</div>';
 
   html += '<div class="lab-header">';
-  html += '<p class="eyebrow sans">Domain: ' + esc(lab.domain) + '</p>';
+  html += '<p class="eyebrow sans">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p>';
   html += '<h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2>';
   html += '<p class="companion">Companion onboarding manual: Book ' + lab.lab + ', Junior SAP GRC/Security Consultant Edition, V1</p>';
   html += '</div>';
 
   const fields = [
-    ['1', 'The Ticket', lab.ticket], ['2', 'Process', lab.process], ['3', 'Why It Matters', lab.impact],
-    ['4', 'Fix Objective', lab.objective], ['5', 'Target Design', lab.design],
+    ['1', fm[1], lab.ticket], ['2', 'Process', lab.process], ['3', 'Why It Matters', lab.impact],
+    ['4', fm[4], lab.objective], ['5', fm[5], lab.design],
     ['6', 'Scope — What\'s Affected', lab.scope], ['7', 'Where to Look', lab.scope_source],
-    ['8', 'Confirm You Found Everything', lab.scope_check], ['9', 'Fix Approach', lab.fix_approach],
-    ['10', 'Verification Evidence', lab.verification]
+    ['8', 'Confirm You Found Everything', lab.scope_check], ['9', fm[9], lab.fix_approach],
+    ['10', fm[10], lab.verification]
   ];
   fields.forEach(([n, label, text]) => {
     html += '<div class="field"><h3><span class="fn">' + n + '</span> ' + label + '</h3><p>' + esc(text) + '</p></div>';
@@ -394,11 +458,11 @@ function renderMain() {
 
   html += '<div class="field"><h3><span class="fn">12</span> Evaluation</h3><p>' + esc(lab.evaluation) + '</p></div>';
 
-  // Field 13: Resolution
-  html += '<div class="field"><h3><span class="fn">13</span> Resolution</h3>';
-  html += '<p class="sans" style="font-size:13.5px;color:var(--ink-soft);margin-bottom:8px;"><b>Your resolution write-up</b> — write it in your own words before revealing the model.</p>';
-  html += '<textarea id="conclusion-input" placeholder="Type your resolution write-up here...">' + esc(ls.conclusion) + '</textarea>';
-  html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model resolution</button>';
+  // Field 13: track-specific write-up label
+  html += '<div class="field"><h3><span class="fn">13</span> ' + fm[13] + '</h3>';
+  html += '<p class="sans" style="font-size:13.5px;color:var(--ink-soft);margin-bottom:8px;"><b>Your write-up</b> — write it in your own words before revealing the model.</p>';
+  html += '<textarea id="conclusion-input" placeholder="Type your write-up here...">' + esc(ls.conclusion) + '</textarea>';
+  html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model write-up</button>';
   html += '<div class="model-box' + (ls.conclusionRevealed ? ' shown' : '') + '" id="conclusion-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.resolution) + '</p></div>';
   html += '</div>';
 

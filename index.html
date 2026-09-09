@@ -69,6 +69,15 @@
   }
   .mode-toggle button.active { background: var(--gold-light); color: var(--navy-deep); }
 
+  .track-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  .track-tabs button {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #C9C3B4;
+    font-size: 11px; font-weight: 700; padding: 7px 6px; border-radius: 4px; cursor: pointer;
+    line-height: 1.25; text-align: center; transition: background 0.15s ease, color 0.15s ease;
+  }
+  .track-tabs button:hover { background: rgba(255,255,255,0.12); }
+  .track-tabs button.active { background: var(--gold); border-color: var(--gold); color: var(--navy-deep); }
+
   .progress-block { padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.12); font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
   .progress-block .label { font-size: 11.5px; color: #B9B2A0; margin-bottom: 8px; display: flex; justify-content: space-between; }
   .progress-track { height: 6px; background: rgba(255,255,255,0.14); border-radius: 4px; overflow: hidden; }
@@ -262,6 +271,7 @@
       <button id="mode-guide-btn" onclick="setMode('guide')">Course Guide</button>
       <button id="mode-lab-btn" onclick="setMode('lab')">Primary Lab</button>
     </div>
+    <div class="track-tabs sans" id="track-tabs"></div>
     <div class="progress-block">
       <div class="label"><span>Progress</span><span id="progress-count">0 of 8</span></div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
@@ -275,6 +285,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
   var LABS = [];
+  var currentTrack = 'A';
+  var TRACK_META = {
+    A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
+         fields: { 1: 'The Requirement', 4: 'Design Objective', 5: 'Target Design', 9: 'Design Approach', 10: 'Deliverable Evidence', 13: 'Blueprint Write-up' } },
+    B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
+         fields: { 1: 'The Spec', 4: 'Build Objective', 5: 'Target Configuration', 9: 'Build Approach', 10: 'Sign-off Evidence', 13: 'Configuration Write-up' } },
+    C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
+         fields: { 1: 'The Scenario', 4: 'Cutover Objective', 5: 'The Plan', 9: 'Execution Approach', 10: 'Proof It Worked', 13: 'Outcome Write-up' } },
+    D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
+         fields: { 1: 'The Ticket', 4: 'Fix Objective', 5: 'Target Design', 9: 'Fix Approach', 10: 'Verification Evidence', 13: 'Resolution' } }
+  };
   var GRC_SUPABASE_URL = "https://blfgwysgekfqhcafofhe.supabase.co";
   var GRC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI";
   var CONSOLE_URL = "https://REPLACE-WITH-GRC-SECURITY-STUDENT-CONSOLE-URL.vercel.app/";
@@ -285,7 +306,7 @@
   });
 
   async function loadLabContent(){
-    var res = await grc.from('grc_lab_content').select('*').order('lab_number');
+    var res = await grc.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
     if(res.error) throw res.error;
     LABS = res.data.map(function(r){
       return {
@@ -308,7 +329,7 @@
   function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
   var state = loadState();
   function labState(labNum){
-    var key = 'lab' + labNum;
+    var key = currentTrack + '_lab' + labNum;
     if(!state[key]) state[key] = { steps:{}, conclusion:'', challengeResponse:'', gateResponse:'', complete:false };
     return state[key];
   }
@@ -449,7 +470,7 @@
       (res.data || []).forEach(function(r){ completed[r.module_id] = true; });
       LABS.forEach(function(lab){
         var ls = labState(lab.lab);
-        if(completed['lab' + lab.lab]) ls.complete = true;
+        if(completed[currentTrack + '_lab' + lab.lab]) ls.complete = true;
       });
       saveState(state);
       document.getElementById('sync-status').textContent = 'Synced as ' + userEmail;
@@ -462,24 +483,65 @@
 
   async function pushLabCompletion(labNum, complete){
     if(!userEmail) return;
+    var moduleId = currentTrack + '_lab' + labNum;
     try{
       if(complete){
         await grc.from('grc_progress').upsert(
-          { email: userEmail, course_id: ELECTIVE_COURSE_ID, module_id: 'lab' + labNum, completed_at: new Date().toISOString() },
+          { email: userEmail, course_id: ELECTIVE_COURSE_ID, module_id: moduleId, completed_at: new Date().toISOString() },
           { onConflict: 'email,course_id,module_id' }
         );
       } else {
-        await grc.from('grc_progress').delete().eq('email', userEmail).eq('course_id', ELECTIVE_COURSE_ID).eq('module_id', 'lab' + labNum);
+        await grc.from('grc_progress').delete().eq('email', userEmail).eq('course_id', ELECTIVE_COURSE_ID).eq('module_id', moduleId);
       }
     }catch(e){ console.warn('Could not sync completion:', e); }
+  }
+
+  // ---------- TRACK SWITCHING ----------
+  function renderTrackTabs(){
+    var wrap = document.getElementById('track-tabs');
+    wrap.innerHTML = '';
+    ['A','B','C','D'].forEach(function(t){
+      var btn = document.createElement('button');
+      btn.className = (t === currentTrack ? 'active' : '');
+      btn.innerHTML = TRACK_META[t].name;
+      btn.onclick = async function(){
+        if(t === currentTrack) return;
+        currentTrack = t;
+        currentLab = 1;
+        var mainEl = document.getElementById('main');
+        if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
+        try {
+          await loadLabContent();
+        } catch(e) {
+          console.error('Failed to load lab content:', e);
+          if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content for this track. Check your connection and reload the page.</p>';
+          return;
+        }
+        await pullRemoteProgress();
+        render();
+        window.scrollTo(0,0);
+      };
+      wrap.appendChild(btn);
+    });
   }
 
   // ---------- MODE + NAV ----------
   function setMode(m){ currentMode = m; render(); }
 
   function renderNav(){
+    renderTrackTabs();
     var nav = document.getElementById('lab-nav');
     nav.innerHTML = '';
+    if (LABS.length === 0) {
+      var li0 = document.createElement('li');
+      li0.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No labs published in this track yet.</p>';
+      nav.appendChild(li0);
+      document.getElementById('progress-count').textContent = '0 of 0';
+      document.getElementById('progress-fill').style.width = '0%';
+      document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
+      document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
+      return;
+    }
     LABS.forEach(function(lab){
       var ls = labState(lab.lab);
       var li = document.createElement('li');
@@ -499,26 +561,32 @@
 
   function render(){
     renderNav();
+    if (LABS.length === 0) {
+      var mainEl = document.getElementById('main');
+      if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No labs published in this track yet — check back soon, or switch to another track above.</p>';
+      return;
+    }
     if(currentMode === 'guide') renderGuideMain(); else renderLabMain();
   }
 
   // ---------- COURSE GUIDE MODE ----------
   function renderGuideMain(){
-    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0];
+    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0] || LABS[0];
+    currentLab = lab.lab;
     var main = document.getElementById('main');
     var html = '';
     html += '<div class="rules-banner sans">';
     html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
-    html += '<div><b>Planning card before transaction code.</b> If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.</div>';
+    html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
     html += '</div>';
-    html += '<div class="lab-header"><p class="eyebrow">Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2></div>';
+    html += '<div class="lab-header"><p class="eyebrow">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2></div>';
 
     html += '<div class="guide-box"><b class="label">Read Before Working This Lab</b><p>' + esc(lab.ticket) + '</p></div>';
 
     html += '<div class="guide-sub">Work Through, In Order</div>';
     html += '<ul class="guide-steps">';
-    html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 diagnosed through, then fields 11&ndash;12 executed live on the training server.</li>';
-    html += '<li>Independently, write your own Field 13 resolution write-up before revealing the Primary Lab\'s model resolution.</li>';
+    html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 worked through, then fields 11&ndash;12 executed live on the training server.</li>';
+    html += '<li>Independently, write your own Field 13 write-up before revealing the Primary Lab\'s model write-up.</li>';
     html += '<li>Independently, answer the Field 14 stakeholder pushback — &ldquo;' + esc(lab.pushback) + '&rdquo; — before revealing the model response.</li>';
     html += '<li>Work Parts A, B, and C of the Execution Steps yourself, end to end, in your assigned ZZ_TRAIN_ practice namespace.</li>';
     html += '<li>Be ready for the facilitator\'s Field 15 escalation-conversation question once your independent run is complete.</li>';
@@ -526,13 +594,13 @@
 
     html += '<div class="guide-sub">You Should Be Able To</div>';
     html += '<ul class="guide-steps">';
-    html += '<li>Diagnose this domain\'s failure pattern using the full planning card (Ticket through Verification Evidence), not just the execution steps.</li>';
-    html += '<li>Execute the lab\'s scope pull, diagnosis, and Part C build entirely on your own, without asking what to do next.</li>';
-    html += '<li>Write a resolution write-up before looking at the model, and compare your own diagnosis against it honestly.</li>';
+    html += '<li>Work through this domain\'s core challenge using the full planning card (fields 1 through 10), not just the execution steps.</li>';
+    html += '<li>Execute the lab\'s fields 1&ndash;10 analysis and Part C build entirely on your own, without asking what to do next.</li>';
+    html += '<li>Write a Field 13 write-up before looking at the model, and compare your own thinking against it honestly.</li>';
     html += '<li>Answer the stakeholder pushback and, when asked, the facilitator-only escalation question for this Lab.</li>';
     html += '</ul>';
 
-    html += '<div class="guide-deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written resolution write-up for ' + esc(lab.book) + ' — in your own words, completed before revealing the Primary Lab\'s model resolution. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</p></div>';
+    html += '<div class="guide-deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written Field 13 write-up for ' + esc(lab.book) + ' — in your own words, completed before revealing the Primary Lab\'s model write-up. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</p></div>';
 
     html += '<button class="guide-goto" onclick="setMode(\'lab\')">Open This Lab &rarr;</button>';
 
@@ -555,25 +623,27 @@
   }
 
   function renderLabMain(){
-    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0];
+    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0] || LABS[0];
+    currentLab = lab.lab;
     var ls = labState(lab.lab);
     var main = document.getElementById('main');
     var html = '';
+    var fm = TRACK_META[currentTrack].fields;
 
     html += '<div class="rules-banner sans">';
     html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
-    html += '<div><b>Planning card before transaction code.</b> If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.</div>';
+    html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
     html += '</div>';
 
-    html += '<div class="lab-header"><p class="eyebrow">Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2>';
+    html += '<div class="lab-header"><p class="eyebrow">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2>';
     html += '<p class="companion">Course Guide for this Lab is one click away in the sidebar above.</p></div>';
 
     var fields = [
-      ['1','The Ticket',lab.ticket], ['2','Process',lab.process], ['3','Why It Matters',lab.impact],
-      ['4','Fix Objective',lab.objective], ['5','Target Design',lab.design],
+      ['1',fm[1],lab.ticket], ['2','Process',lab.process], ['3','Why It Matters',lab.impact],
+      ['4',fm[4],lab.objective], ['5',fm[5],lab.design],
       ['6','Scope — What\'s Affected',lab.scope], ['7','Where to Look',lab.scope_source],
-      ['8','Confirm You Found Everything',lab.scope_check], ['9','Fix Approach',lab.fix_approach],
-      ['10','Verification Evidence',lab.verification]
+      ['8','Confirm You Found Everything',lab.scope_check], ['9',fm[9],lab.fix_approach],
+      ['10',fm[10],lab.verification]
     ];
     fields.forEach(function(f){
       html += '<div class="field"><h3><span class="fn">' + f[0] + '</span> ' + f[1] + '</h3><p>' + esc(f[2]) + '</p></div>';
@@ -586,10 +656,10 @@
 
     html += '<div class="field"><h3><span class="fn">12</span> Evaluation</h3><p>' + esc(lab.evaluation) + '</p></div>';
 
-    html += '<div class="field"><h3><span class="fn">13</span> Resolution</h3>';
-    html += '<p class="sans" style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;"><b>Your resolution write-up</b> — write it in your own words before revealing the model.</p>';
-    html += '<textarea id="conclusion-input" placeholder="Type your resolution write-up here...">' + esc(ls.conclusion) + '</textarea>';
-    html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model resolution</button>';
+    html += '<div class="field"><h3><span class="fn">13</span> ' + fm[13] + '</h3>';
+    html += '<p class="sans" style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;"><b>Your write-up</b> — write it in your own words before revealing the model.</p>';
+    html += '<textarea id="conclusion-input" placeholder="Type your write-up here...">' + esc(ls.conclusion) + '</textarea>';
+    html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model write-up</button>';
     html += '<div class="model-box' + (ls.conclusionRevealed ? ' shown' : '') + '" id="conclusion-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.resolution) + '</p></div>';
     html += '</div>';
 
