@@ -608,11 +608,44 @@
       if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No content published in this track yet.</p>';
       return;
     }
-    if (isFoundations) { renderFoundationsMain(); return; }
+    if (isFoundations) { if (currentMode === 'guide') renderFoundationsGuide(); else renderFoundationsMain(); return; }
     if(currentMode === 'guide') renderGuideMain(); else renderLabMain();
   }
 
   // ---------- FOUNDATIONS MODE (Track 0) ----------
+  // ---------- FOUNDATIONS MODE (Track 0) — Guide view (summary, no checkboxes) ----------
+  function renderFoundationsGuide(){
+    var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0] || FOUNDATIONS[0];
+    currentLab = mod.module;
+    var main = document.getElementById('main');
+    var html = '';
+
+    html += '<div class="rules-banner sans">';
+    html += '<div><b>Track 0 — Foundations.</b> These modules teach the SAP mechanics — navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW — that Tracks A through D assume you already have.</div>';
+    html += '<div><b>Work in order.</b> Several modules explicitly build on the one before it — check each module\'s Prerequisites before starting.</div>';
+    html += '</div>';
+
+    html += '<div class="lab-header"><p class="eyebrow">Track: Foundations &middot; Transaction/App: ' + esc(mod.transaction) + '</p><h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2></div>';
+
+    html += '<div class="guide-box"><b class="label">Overview</b><p>' + esc(mod.overview) + '</p></div>';
+    html += '<div class="guide-box"><b class="label">Prerequisites</b><p>' + esc(mod.prerequisites) + '</p></div>';
+
+    html += '<div class="guide-sub">Work Through, In Order</div>';
+    html += '<ul class="guide-steps">';
+    mod.walkthrough.forEach(function(part){
+      html += '<li><b>' + esc(part.title) + '</b> — ' + esc(part.before) + '</li>';
+    });
+    html += '<li>Complete the practice exercise for this module before moving to the next one.</li>';
+    html += '</ul>';
+
+    html += '<div class="guide-deliver"><b class="label">Practice Exercise</b><p>' + esc(mod.practice_exercise) + '</p></div>';
+
+    html += '<button class="guide-goto" onclick="setMode(\'lab\')">Open This Module &rarr;</button>';
+
+    main.innerHTML = html;
+  }
+
+  // ---------- FOUNDATIONS MODE (Track 0) — Primary Lab view (full walkthrough) ----------
   function renderFoundationsMain(){
     var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0] || FOUNDATIONS[0];
     currentLab = mod.module;
