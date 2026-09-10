@@ -285,15 +285,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
   var LABS = [];
-  var currentTrack = 'A';
+  var FOUNDATIONS = [];
+  var currentTrack = '0';
   var TRACK_META = {
-    A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
+    '0': { name: 'Foundations', type: 'foundations' },
+    A: { name: 'Design &amp; Blueprint', type: 'scenario', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Requirement', 4: 'Design Objective', 5: 'Target Design', 9: 'Design Approach', 10: 'Deliverable Evidence', 13: 'Blueprint Write-up' } },
-    B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
+    B: { name: 'Configuration &amp; Build', type: 'scenario', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Spec', 4: 'Build Objective', 5: 'Target Configuration', 9: 'Build Approach', 10: 'Sign-off Evidence', 13: 'Configuration Write-up' } },
-    C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
+    C: { name: 'Go-Live &amp; Cutover', type: 'scenario', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Scenario', 4: 'Cutover Objective', 5: 'The Plan', 9: 'Execution Approach', 10: 'Proof It Worked', 13: 'Outcome Write-up' } },
-    D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
+    D: { name: 'Post-Go-Live Support', type: 'scenario', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Ticket', 4: 'Fix Objective', 5: 'Target Design', 9: 'Fix Approach', 10: 'Verification Evidence', 13: 'Resolution' } }
   };
   var GRC_SUPABASE_URL = "https://blfgwysgekfqhcafofhe.supabase.co";
@@ -306,6 +308,19 @@
   });
 
   async function loadLabContent(){
+    if (TRACK_META[currentTrack].type === 'foundations') {
+      var fres = await grc.from('grc_foundations_content').select('*').order('module_number');
+      if(fres.error) throw fres.error;
+      FOUNDATIONS = fres.data.map(function(r){
+        return {
+          module: r.module_number, title: r.title, transaction: r.transaction_or_app, overview: r.overview,
+          prerequisites: r.prerequisites, walkthrough: r.walkthrough, practice_exercise: r.practice_exercise,
+          common_mistakes: r.common_mistakes, quick_reference: r.quick_reference
+        };
+      });
+      LABS = [];
+      return;
+    }
     var res = await grc.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
     if(res.error) throw res.error;
     LABS = res.data.map(function(r){
@@ -317,6 +332,7 @@
         pushback: r.pushback, pushback_model: r.pushback_model, escalation: r.escalation, escalation_model: r.escalation_model
       };
     });
+    FOUNDATIONS = [];
   }
 
   var userEmail = null;
@@ -472,6 +488,10 @@
         var ls = labState(lab.lab);
         if(completed[currentTrack + '_lab' + lab.lab]) ls.complete = true;
       });
+      FOUNDATIONS.forEach(function(mod){
+        var ls = labState('f' + mod.module);
+        if(completed[currentTrack + '_lab' + mod.module]) ls.complete = true;
+      });
       saveState(state);
       document.getElementById('sync-status').textContent = 'Synced as ' + userEmail;
       document.getElementById('sync-status').className = 'sync-status on';
@@ -500,7 +520,7 @@
   function renderTrackTabs(){
     var wrap = document.getElementById('track-tabs');
     wrap.innerHTML = '';
-    ['A','B','C','D'].forEach(function(t){
+    ['0','A','B','C','D'].forEach(function(t){
       var btn = document.createElement('button');
       btn.className = (t === currentTrack ? 'active' : '');
       btn.innerHTML = TRACK_META[t].name;
@@ -509,12 +529,12 @@
         currentTrack = t;
         currentLab = 1;
         var mainEl = document.getElementById('main');
-        if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
+        if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading content&hellip;</p>';
         try {
           await loadLabContent();
         } catch(e) {
-          console.error('Failed to load lab content:', e);
-          if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content for this track. Check your connection and reload the page.</p>';
+          console.error('Failed to load content:', e);
+          if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:#a33;">Could not load content for this track. Check your connection and reload the page.</p>';
           return;
         }
         await pullRemoteProgress();
@@ -532,12 +552,32 @@
     renderTrackTabs();
     var nav = document.getElementById('lab-nav');
     nav.innerHTML = '';
-    if (LABS.length === 0) {
+    var isFoundations = TRACK_META[currentTrack].type === 'foundations';
+    var items = isFoundations ? FOUNDATIONS : LABS;
+    if (items.length === 0) {
       var li0 = document.createElement('li');
-      li0.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No labs published in this track yet.</p>';
+      li0.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No content published in this track yet.</p>';
       nav.appendChild(li0);
       document.getElementById('progress-count').textContent = '0 of 0';
       document.getElementById('progress-fill').style.width = '0%';
+      document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
+      document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
+      return;
+    }
+    if (isFoundations) {
+      FOUNDATIONS.forEach(function(mod){
+        var ls = labState('f' + mod.module);
+        var li = document.createElement('li');
+        var btn = document.createElement('button');
+        btn.className = (mod.module === currentLab ? 'active ' : '') + (ls.complete ? 'done' : '');
+        btn.innerHTML = '<span class="num">' + mod.module + '</span><span class="dom">' + esc(mod.title) + '</span><span class="check"></span>';
+        btn.onclick = function(){ currentLab = mod.module; render(); window.scrollTo(0,0); };
+        li.appendChild(btn);
+        nav.appendChild(li);
+      });
+      var doneCountF = FOUNDATIONS.filter(function(m){ return labState('f' + m.module).complete; }).length;
+      document.getElementById('progress-count').textContent = doneCountF + ' of ' + FOUNDATIONS.length;
+      document.getElementById('progress-fill').style.width = (doneCountF / FOUNDATIONS.length * 100) + '%';
       document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
       document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
       return;
@@ -561,17 +601,74 @@
 
   function render(){
     renderNav();
-    if (LABS.length === 0) {
+    var isFoundations = TRACK_META[currentTrack].type === 'foundations';
+    var items = isFoundations ? FOUNDATIONS : LABS;
+    if (items.length === 0) {
       var mainEl = document.getElementById('main');
-      if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No labs published in this track yet — check back soon, or switch to another track above.</p>';
+      if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No content published in this track yet.</p>';
       return;
     }
+    if (isFoundations) { renderFoundationsMain(); return; }
     if(currentMode === 'guide') renderGuideMain(); else renderLabMain();
+  }
+
+  // ---------- FOUNDATIONS MODE (Track 0) ----------
+  function renderFoundationsMain(){
+    var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0] || FOUNDATIONS[0];
+    currentLab = mod.module;
+    var ls = labState('f' + mod.module);
+    var main = document.getElementById('main');
+    var html = '';
+
+    html += '<div class="rules-banner sans">';
+    html += '<div><b>Track 0 — Foundations.</b> These modules teach the SAP mechanics — navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW — that Tracks A through D assume you already have.</div>';
+    html += '<div><b>Work in order.</b> Several modules explicitly build on the one before it — check each module\'s Prerequisites before starting.</div>';
+    html += '</div>';
+
+    html += '<div class="lab-header"><p class="eyebrow">Track: Foundations &middot; Transaction/App: ' + esc(mod.transaction) + '</p><h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2></div>';
+
+    html += '<div class="field"><h3><span class="fn">1</span> Overview</h3><p>' + esc(mod.overview) + '</p></div>';
+    html += '<div class="field"><h3><span class="fn">2</span> Prerequisites</h3><p>' + esc(mod.prerequisites) + '</p></div>';
+
+    html += '<div class="field"><h3><span class="fn">3</span> Step-by-Step Walkthrough</h3>';
+    html += '<div class="callout"><b class="sans">HANDS-ON — PRACTICE NAMESPACE</b>Follow every step in your assigned ZZ_TRAIN_ namespace or training client. Never perform these steps against a production object.</div>';
+    mod.walkthrough.forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
+    html += '</div>';
+
+    html += '<div class="field"><h3><span class="fn">4</span> Practice Exercise</h3><p>' + esc(mod.practice_exercise) + '</p></div>';
+    html += '<div class="field"><h3><span class="fn">5</span> Common Mistakes</h3><p>' + esc(mod.common_mistakes) + '</p></div>';
+    html += '<div class="field"><h3><span class="fn">6</span> Quick Reference</h3><p>' + esc(mod.quick_reference) + '</p></div>';
+
+    html += '<div class="field"><label class="sans" style="display:flex;align-items:center;gap:8px;font-size:14px;">';
+    html += '<input type="checkbox" id="complete-toggle" ' + (ls.complete ? 'checked' : '') + '> Mark this module complete';
+    html += '</label></div>';
+
+    main.innerHTML = html;
+
+    mod.walkthrough.forEach(function(part, pi){
+      part.steps.forEach(function(s, si){
+        var stepKey = pi + '_' + si;
+        var cb = main.querySelector('input[data-step="' + stepKey + '"]');
+        if (cb) cb.addEventListener('change', function(e){
+          ls.steps[stepKey] = e.target.checked;
+          saveState(state);
+          e.target.nextElementSibling.className = e.target.checked ? 'done-text' : '';
+        });
+      });
+    });
+    var completeToggle = document.getElementById('complete-toggle');
+    if (completeToggle) completeToggle.addEventListener('change', function(e){
+      ls.complete = e.target.checked;
+      saveState(state);
+      pushLabCompletion(mod.module, ls.complete);
+      render();
+    });
   }
 
   // ---------- COURSE GUIDE MODE ----------
   function renderGuideMain(){
     var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0] || LABS[0];
+
     currentLab = lab.lab;
     var main = document.getElementById('main');
     var html = '';

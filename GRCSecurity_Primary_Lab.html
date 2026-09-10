@@ -205,15 +205,17 @@ let currentTrack = 'A';
 const STORAGE_KEY = 'grcSecurityPrimaryLab_v1';
 
 const TRACK_META = {
-  A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
+  '0': { name: 'Foundations', type: 'foundations' },
+  A: { name: 'Design &amp; Blueprint', type: 'scenario', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
        fields: { 1: 'The Requirement', 4: 'Design Objective', 5: 'Target Design', 9: 'Design Approach', 10: 'Deliverable Evidence', 13: 'Blueprint Write-up' } },
-  B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
+  B: { name: 'Configuration &amp; Build', type: 'scenario', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.',
        fields: { 1: 'The Spec', 4: 'Build Objective', 5: 'Target Configuration', 9: 'Build Approach', 10: 'Sign-off Evidence', 13: 'Configuration Write-up' } },
-  C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
+  C: { name: 'Go-Live &amp; Cutover', type: 'scenario', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.',
        fields: { 1: 'The Scenario', 4: 'Cutover Objective', 5: 'The Plan', 9: 'Execution Approach', 10: 'Proof It Worked', 13: 'Outcome Write-up' } },
-  D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
+  D: { name: 'Post-Go-Live Support', type: 'scenario', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
        fields: { 1: 'The Ticket', 4: 'Fix Objective', 5: 'Target Design', 9: 'Fix Approach', 10: 'Verification Evidence', 13: 'Resolution' } }
 };
+const TRACK_ORDER = ['0', 'A', 'B', 'C', 'D'];
 
 /* ---------- Trainee Console SSO + progress sync ----------
    Standalone by default: this app works fully offline via localStorage
@@ -232,8 +234,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ELECTIVE_COURSE_ID = 'grc_security_primarylab';
 const sbPublic = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+let FOUNDATIONS = [];
 async function loadLabContent() {
   if (!sbPublic) throw new Error('Supabase client unavailable');
+  if (TRACK_META[currentTrack].type === 'foundations') {
+    const { data, error } = await sbPublic.from('grc_foundations_content').select('*').order('module_number');
+    if (error) throw error;
+    FOUNDATIONS = data.map(r => ({
+      module: r.module_number, title: r.title, transaction: r.transaction_or_app, overview: r.overview,
+      prerequisites: r.prerequisites, walkthrough: r.walkthrough, practice_exercise: r.practice_exercise,
+      common_mistakes: r.common_mistakes, quick_reference: r.quick_reference
+    }));
+    LABS = [];
+    return;
+  }
   const { data, error } = await sbPublic.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
   if (error) throw error;
   LABS = data.map(r => ({
@@ -243,6 +257,7 @@ async function loadLabContent() {
     verification: r.verification, exec: r.exec, evaluation: r.evaluation, resolution: r.resolution,
     pushback: r.pushback, pushback_model: r.pushback_model, escalation: r.escalation, escalation_model: r.escalation_model
   }));
+  FOUNDATIONS = [];
 }
 let sb = null;
 let syncEmail = null;
@@ -309,6 +324,10 @@ async function pullRemoteProgress() {
       const ls = labState(lab.lab);
       if (completedModules.has(labModuleId(lab.lab))) ls.complete = true;
     });
+    FOUNDATIONS.forEach(mod => {
+      const ls = labState('f' + mod.module);
+      if (completedModules.has(labModuleId(mod.module))) ls.complete = true;
+    });
     saveState(state);
   } catch (e) {
     console.warn('Could not pull remote progress, using local state only:', e);
@@ -349,7 +368,7 @@ let currentLab = 1;
 function renderTrackTabs() {
   const wrap = document.getElementById('track-tabs');
   wrap.innerHTML = '';
-  ['A','B','C','D'].forEach(t => {
+  ['0','A','B','C','D'].forEach(t => {
     const btn = document.createElement('button');
     btn.className = (t === currentTrack ? 'active' : '');
     btn.innerHTML = TRACK_META[t].name;
@@ -377,12 +396,30 @@ function renderNav() {
   renderTrackTabs();
   const nav = document.getElementById('lab-nav');
   nav.innerHTML = '';
-  if (LABS.length === 0) {
+  const isFoundations = TRACK_META[currentTrack].type === 'foundations';
+  const items = isFoundations ? FOUNDATIONS : LABS;
+  if (items.length === 0) {
     const li = document.createElement('li');
-    li.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No labs published in this track yet.</p>';
+    li.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No content published in this track yet.</p>';
     nav.appendChild(li);
     document.getElementById('progress-count').textContent = '0 of 0';
     document.getElementById('progress-fill').style.width = '0%';
+    return;
+  }
+  if (isFoundations) {
+    FOUNDATIONS.forEach(m => {
+      const ls = labState('f' + m.module);
+      const li = document.createElement('li');
+      const btn = document.createElement('button');
+      btn.className = (m.module === currentLab ? 'active ' : '') + (ls.complete ? 'done' : '');
+      btn.innerHTML = '<span class="num">' + m.module + '</span><span class="dom">' + m.title + '</span><span class="check"></span>';
+      btn.onclick = () => { currentLab = m.module; render(); window.scrollTo(0,0); };
+      li.appendChild(btn);
+      nav.appendChild(li);
+    });
+    const doneCount = FOUNDATIONS.filter(m => labState('f' + m.module).complete).length;
+    document.getElementById('progress-count').textContent = doneCount + ' of ' + FOUNDATIONS.length;
+    document.getElementById('progress-fill').style.width = (doneCount / FOUNDATIONS.length * 100) + '%';
     return;
   }
   LABS.forEach(lab => {
@@ -402,8 +439,85 @@ function renderNav() {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+function execPartHtml(part, pi, ls) {
+  let html = '';
+  html += '<div class="exec-part"><h4>' + esc(part.title) + '</h4>';
+  html += '<p class="before"><b>Before you start:</b> ' + esc(part.before) + '</p><ol>';
+  part.steps.forEach((s, si) => {
+    const stepKey = pi + '_' + si;
+    const checked = ls.steps[stepKey] ? 'checked' : '';
+    const doneClass = ls.steps[stepKey] ? 'done-text' : '';
+    html += '<li><label><input type="checkbox" data-step="' + stepKey + '" ' + checked + '><span class="' + doneClass + '">' + esc(s) + '</span></label></li>';
+  });
+  html += '</ol><p class="capture sans"><b>What to capture:</b> ' + esc(part.capture) + '</p></div>';
+  return html;
+}
+
+function renderFoundationsMain() {
+  const main = document.getElementById('main');
+  const mod = FOUNDATIONS.find(m => m.module === currentLab) || FOUNDATIONS[0];
+  currentLab = mod.module;
+  const ls = labState('f' + mod.module);
+
+  let html = '';
+  html += '<div class="rules-banner sans">';
+  html += '<div><b>Track 0 — Foundations.</b> These modules teach the SAP mechanics — navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW — that Tracks A through D assume you already have.</div>';
+  html += '<div><b>Work in order.</b> Several modules explicitly build on the one before it — check each module\'s Prerequisites before starting.</div>';
+  html += '</div>';
+
+  html += '<div class="lab-header">';
+  html += '<p class="eyebrow sans">Track: Foundations &middot; Transaction/App: ' + esc(mod.transaction) + '</p>';
+  html += '<h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2>';
+  html += '</div>';
+
+  html += '<div class="field"><h3><span class="fn">1</span> Overview</h3><p>' + esc(mod.overview) + '</p></div>';
+  html += '<div class="field"><h3><span class="fn">2</span> Prerequisites</h3><p>' + esc(mod.prerequisites) + '</p></div>';
+
+  html += '<div class="field"><h3><span class="fn">3</span> Step-by-Step Walkthrough</h3>';
+  html += '<div class="callout"><b class="sans">HANDS-ON — PRACTICE NAMESPACE</b>Follow every step in your assigned ZZ_TRAIN_ namespace or training client. Never perform these steps against a production object.</div>';
+  mod.walkthrough.forEach((part, pi) => { html += execPartHtml(part, pi, ls); });
+  html += '</div>';
+
+  html += '<div class="field"><h3><span class="fn">4</span> Practice Exercise</h3><p>' + esc(mod.practice_exercise) + '</p></div>';
+  html += '<div class="field"><h3><span class="fn">5</span> Common Mistakes</h3><p>' + esc(mod.common_mistakes) + '</p></div>';
+  html += '<div class="field"><h3><span class="fn">6</span> Quick Reference</h3><p>' + esc(mod.quick_reference) + '</p></div>';
+
+  html += '<div class="field"><label class="sans" style="display:flex;align-items:center;gap:8px;font-size:14px;">';
+  html += '<input type="checkbox" id="complete-toggle" ' + (ls.complete ? 'checked' : '') + '> Mark this module complete';
+  html += '</label></div>';
+
+  main.innerHTML = html;
+
+  mod.walkthrough.forEach((part, pi) => {
+    part.steps.forEach((s, si) => {
+      const stepKey = pi + '_' + si;
+      const cb = main.querySelector('input[data-step="' + stepKey + '"]');
+      if (cb) cb.addEventListener('change', (e) => {
+        ls.steps[stepKey] = e.target.checked;
+        saveState(state);
+        e.target.nextElementSibling.className = e.target.checked ? 'done-text' : '';
+      });
+    });
+  });
+  const completeToggle = document.getElementById('complete-toggle');
+  if (completeToggle) completeToggle.addEventListener('change', (e) => {
+    ls.complete = e.target.checked;
+    saveState(state);
+    pushLabCompletion(mod.module, ls.complete);
+    render();
+  });
+}
+
 function renderMain() {
   const main = document.getElementById('main');
+  if (TRACK_META[currentTrack].type === 'foundations') {
+    if (FOUNDATIONS.length === 0) {
+      main.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No content published in this track yet.</p>';
+      return;
+    }
+    renderFoundationsMain();
+    return;
+  }
   if (LABS.length === 0) {
     main.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No labs published in this track yet — check back soon, or switch to another track above.</p>';
     return;
@@ -418,6 +532,7 @@ function renderMain() {
   html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
   html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
   html += '</div>';
+
 
   html += '<div class="lab-header">';
   html += '<p class="eyebrow sans">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p>';

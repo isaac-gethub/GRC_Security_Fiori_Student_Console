@@ -106,19 +106,20 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sbPublic = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 const TRACK_META = {
+  '0': { name: 'Foundations', type: 'foundations', banner: 'These modules teach the SAP navigation and configuration mechanics every other track assumes you already have — work them in order before starting Track A.' },
   A: { name: 'Design &amp; Blueprint', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.' },
   B: { name: 'Configuration &amp; Build', banner: 'If you can\'t state the spec, why it matters, and what the configuration needs to look like, you\'re not ready to open a transaction yet.' },
   C: { name: 'Go-Live &amp; Cutover', banner: 'If you can\'t state the scenario, why it matters, and what the outcome needs to look like, you\'re not ready to open a transaction yet.' },
   D: { name: 'Post-Go-Live Support', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.' }
 };
-let currentTrack = 'A';
+let currentTrack = '0';
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function renderTrackTabs() {
   const wrap = document.getElementById('track-tabs');
   wrap.innerHTML = '';
-  ['A','B','C','D'].forEach(t => {
+  ['0','A','B','C','D'].forEach(t => {
     const btn = document.createElement('button');
     btn.className = (t === currentTrack ? 'active' : '');
     btn.innerHTML = TRACK_META[t].name;
@@ -126,6 +127,43 @@ function renderTrackTabs() {
     wrap.appendChild(btn);
   });
   document.querySelector('.rules-banner div:last-child').innerHTML = '<b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner;
+}
+
+function renderFoundations(MODULES) {
+  const seqBody = document.getElementById('seq-body');
+  seqBody.innerHTML = '';
+  MODULES.forEach(mod => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>Module ' + mod.module + '</td><td>' + esc(mod.transaction) + '</td>';
+    seqBody.appendChild(tr);
+  });
+
+  const labsDiv = document.getElementById('labs');
+  MODULES.forEach(mod => {
+    const block = document.createElement('div');
+    block.className = 'lab-block';
+    let html = '';
+    html += '<p class="eyebrow">Transaction/App: ' + esc(mod.transaction) + '</p>';
+    html += '<h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2>';
+
+    html += '<div class="callout"><b class="label">Overview</b><p>' + esc(mod.overview) + '</p></div>';
+    html += '<div class="callout"><b class="label">Prerequisites</b><p>' + esc(mod.prerequisites) + '</p></div>';
+
+    html += '<h3 class="sub">Work Through, In Order</h3>';
+    html += '<ul class="steps">';
+    mod.walkthrough.forEach(part => {
+      html += '<li><b>' + esc(part.title) + '</b> — ' + esc(part.before) + '</li>';
+    });
+    html += '<li>Complete the practice exercise for this module before moving to the next one.</li>';
+    html += '</ul>';
+
+    html += '<div class="deliver"><b class="label">Practice Exercise</b><p>' + esc(mod.practice_exercise) + '</p></div>';
+
+    html += '<a class="go-link" href="GRCSecurity_Primary_Lab.html">Open Module ' + mod.module + ' in the Primary Lab &rarr;</a>';
+
+    block.innerHTML = html;
+    labsDiv.appendChild(block);
+  });
 }
 
 function renderAll(LABS) {
@@ -177,9 +215,26 @@ LABS.forEach(lab => {
 async function loadAndRender() {
   renderTrackTabs();
   const labsDiv = document.getElementById('labs');
-  labsDiv.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
+  labsDiv.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading content&hellip;</p>';
   try {
     if (!sbPublic) throw new Error('Supabase client unavailable');
+    if (TRACK_META[currentTrack].type === 'foundations') {
+      const { data, error } = await sbPublic.from('grc_foundations_content').select('*').order('module_number');
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        document.getElementById('seq-body').innerHTML = '';
+        labsDiv.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No content published in this track yet.</p>';
+        return;
+      }
+      const MODULES = data.map(r => ({
+        module: r.module_number, title: r.title, transaction: r.transaction_or_app, overview: r.overview,
+        prerequisites: r.prerequisites, walkthrough: r.walkthrough, practice_exercise: r.practice_exercise,
+        common_mistakes: r.common_mistakes, quick_reference: r.quick_reference
+      }));
+      labsDiv.innerHTML = '';
+      renderFoundations(MODULES);
+      return;
+    }
     const { data, error } = await sbPublic.from('grc_lab_content').select('*').eq('track', currentTrack).order('lab_number');
     if (error) throw error;
     if (!data || data.length === 0) {
@@ -197,8 +252,8 @@ async function loadAndRender() {
     labsDiv.innerHTML = '';
     renderAll(LABS);
   } catch (e) {
-    console.error('Failed to load lab content:', e);
-    labsDiv.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content. Check your connection and reload the page.</p>';
+    console.error('Failed to load content:', e);
+    labsDiv.innerHTML = '<p style="padding:24px;color:#a33;">Could not load content. Check your connection and reload the page.</p>';
   }
 }
 
