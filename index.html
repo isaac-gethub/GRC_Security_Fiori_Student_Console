@@ -4,289 +4,195 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GRC Security &amp; Fiori Student Console — TIB Systems</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --navy:#1F3864; --navy-deep:#10233F; --gold:#9C7A22; --gold-light:#C79A3D;
-    --paper:#FAF9F6; --panel:#FFFFFF; --ink:#1D1D1B; --ink-soft:#55524C; --line:#DAD5C8;
-    --green:#1E7145; --red:#C00000;
-    --auth-bg:#F4F6FA; --auth-border:#E1E6EF; --auth-muted:#5A6472;
+    --navy:#1F3864; --navy-dark:#152747; --blue:#2E5395; --accent:#3E7CB1;
+    --green:#1E7145; --red:#C00000; --gold:#B8860B;
+    --bg:#F4F6FA; --card:#FFFFFF; --border:#E1E6EF; --text:#1B2430; --muted:#5A6472;
   }
-  * { box-sizing: border-box; }
-  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; color:var(--ink); }
-  a { color: inherit; }
-  .hidden{ display:none !important; }
-
-  /* ============ AUTH SCREENS ============ */
-  #wrap-auth{ background:var(--auth-bg); min-height:100vh; }
-  .auth-inner{ max-width:460px; margin:0 auto; padding:24px 16px 60px; }
-  .auth-top{ background:linear-gradient(135deg,var(--navy),var(--navy-deep)); color:#fff; padding:22px 20px; border-radius:14px; margin-bottom:18px; }
-  .auth-top h1{ margin:0 0 4px; font-size:1.25rem; }
-  .auth-top p{ margin:0; font-size:0.85rem; color:#C9D4E8; }
-  .auth-card{ background:var(--panel); border:1px solid var(--auth-border); border-radius:14px; padding:24px; margin-bottom:16px; box-shadow:0 1px 3px rgba(20,30,60,0.05); }
-  .auth-card h2{ margin:0 0 14px; font-size:1.1rem; }
-  .auth-card label{ display:block; font-size:0.85rem; font-weight:600; margin:14px 0 6px; color:var(--auth-muted); }
-  .auth-card input[type=email], .auth-card input[type=password], .auth-card input[type=text]{
-    width:100%; padding:11px 12px; border:1.5px solid var(--auth-border); border-radius:9px; font-size:0.95rem; font-family:inherit;
-  }
-  .auth-card input:focus{ outline:none; border-color:var(--gold); }
-  .auth-btn{
-    display:inline-block; width:100%; background:var(--gold); color:#fff; border:none;
-    padding:13px 22px; border-radius:9px; font-size:0.95rem; font-weight:600;
-    cursor:pointer; transition:background 0.15s; margin-top:18px; text-align:center; text-decoration:none;
-  }
-  .auth-btn:hover{ background:var(--navy); }
-  .auth-btn.secondary{ background:#fff; color:var(--gold); border:1.5px solid var(--gold); }
-  .auth-btn:disabled{ opacity:0.5; cursor:not-allowed; }
-  .auth-link-row{ text-align:center; margin-top:16px; font-size:0.87rem; }
-  .auth-link-row a{ color:var(--gold); text-decoration:none; cursor:pointer; }
-  .auth-link-row a:hover{ text-decoration:underline; }
-  .auth-msg{ padding:11px 14px; border-radius:9px; font-size:0.87rem; margin-top:14px; line-height:1.5; }
-  .auth-msg.error{ background:#FBE8E8; color:var(--red); border:1px solid #F0C4C4; }
-  .auth-msg.ok{ background:#E7F3EC; color:var(--green); border:1px solid #C3E2CE; }
-  .auth-msg.info{ background:#EAF0F8; color:var(--navy); border:1px solid #C9D4E8; }
-  .auth-spinner{ width:30px; height:30px; margin:30px auto; border:3px solid var(--auth-border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--text);}
+  .hidden{display:none !important;}
+  a{color:var(--blue);}
+  /* ---------- Auth screens ---------- */
+  .auth-wrap{max-width:420px; margin:60px auto; padding:0 16px;}
+  .auth-card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; box-shadow:0 1px 3px rgba(20,30,60,0.06);}
+  .auth-card h1{font-size:1.15rem; margin:0 0 4px; color:var(--navy);}
+  .auth-card p.sub{margin:0 0 20px; font-size:0.85rem; color:var(--muted);}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--text);}
+  .field input{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.92rem; font-family:inherit;}
+  .btn{display:inline-block; background:var(--blue); color:#fff; border:none; padding:12px 20px; border-radius:9px; font-size:0.92rem; font-weight:600; cursor:pointer; font-family:inherit;}
+  .btn:hover{background:var(--navy);}
+  .btn.block{width:100%;}
+  .btn.secondary{background:#fff; color:var(--blue); border:1.5px solid var(--blue);}
+  .btn.secondary:hover{background:#EEF2FA;}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .msg{font-size:0.82rem; margin-top:10px; padding:8px 10px; border-radius:8px;}
+  .msg.error{background:#FDEBEC; color:var(--red);}
+  .msg.ok{background:#EAF6EE; color:var(--green);}
+  .msg.info{background:#EEF2FA; color:var(--blue);}
+  .switch-link{font-size:0.82rem; text-align:center; margin-top:16px; color:var(--muted);}
+  .switch-link a{cursor:pointer; font-weight:600;}
+  .spinner{width:30px; height:30px; margin:20px auto; border:3px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite;}
   @keyframes spin{ to{ transform:rotate(360deg); } }
-  .pwreq{ font-size:0.78rem; color:var(--auth-muted); margin-top:4px; }
-
-  /* ============ MAIN APP (post-login) ============ */
-  #wrap-app { display: flex; min-height: 100vh; font-family: Georgia, 'Iowan Old Style', 'Palatino Linotype', serif; background: var(--paper); }
-  .sans { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  .sidebar {
-    width: 300px; flex-shrink: 0; background: var(--navy-deep); color: #E9E4D8;
-    padding: 22px 0 30px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
-  }
-  .brand { padding: 0 22px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
-  .brand .kicker { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 10.5px; letter-spacing: 0.06em; color: var(--gold-light); margin: 0 0 6px; }
-  .brand h1 { font-size: 18px; margin: 0 0 4px; line-height: 1.25; font-weight: 600; }
-  .brand p.who { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; color: #B9B2A0; margin: 0 0 8px; }
-  .brand .signout { background: none; border: none; color: var(--gold-light); font-size: 11.5px; cursor: pointer; text-decoration: underline; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-
-  .mode-toggle { display: flex; gap: 6px; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
-  .mode-toggle button {
-    flex: 1; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; font-weight: 700;
-    padding: 9px 8px; border-radius: 18px; cursor: pointer; border: 1.5px solid var(--gold-light);
-    background: rgba(199,154,61,0.12); color: #fff; transition: background 0.15s ease;
-  }
-  .mode-toggle button.active { background: var(--gold-light); color: var(--navy-deep); }
-
-  .track-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 16px 14px; border-bottom: 1px solid rgba(255,255,255,0.12); }
-  .track-tabs button {
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: #C9C3B4;
-    font-size: 11px; font-weight: 700; padding: 7px 6px; border-radius: 4px; cursor: pointer;
-    line-height: 1.25; text-align: center; transition: background 0.15s ease, color 0.15s ease;
-  }
-  .track-tabs button:hover { background: rgba(255,255,255,0.12); }
-  .track-tabs button.active { background: var(--gold); border-color: var(--gold); color: var(--navy-deep); }
-
-  .progress-block { padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.12); font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-  .progress-block .label { font-size: 11.5px; color: #B9B2A0; margin-bottom: 8px; display: flex; justify-content: space-between; }
-  .progress-track { height: 6px; background: rgba(255,255,255,0.14); border-radius: 4px; overflow: hidden; }
-  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.4s ease; }
-  .sync-status { margin-top: 8px; font-size: 10.5px; color: #8b8878; }
-  .sync-status.on { color: var(--gold-light); }
-
-  .lab-nav { list-style: none; margin: 0; padding: 10px 10px; }
-  .lab-nav li { margin-bottom: 2px; }
-  .lab-nav button {
-    width: 100%; text-align: left; background: none; border: none; color: #D9D3C4;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px;
-    padding: 10px 12px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 10px;
-  }
-  .lab-nav button:hover { background: rgba(255,255,255,0.06); }
-  .lab-nav button.active { background: rgba(255,255,255,0.11); color: #fff; }
-  .lab-nav .num { font-weight: 700; color: var(--gold-light); width: 18px; flex-shrink: 0; }
-  .lab-nav .dom { flex: 1; }
-  .lab-nav .check { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #6b6656; flex-shrink: 0; }
-  .lab-nav button.done .check { background: var(--gold-light); border-color: var(--gold-light); }
-
-  .main { flex: 1; padding: 44px 52px 100px; max-width: 900px; }
-  .rules-banner {
-    display: flex; gap: 20px; background: #2A2320; color: #F1EADD;
-    padding: 14px 20px; border-radius: 3px; margin-bottom: 32px;
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; flex-wrap: wrap;
-  }
-  .rules-banner div { flex: 1; min-width: 220px; }
-  .rules-banner b { color: var(--gold-light); }
-
-  .lab-header .eyebrow { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--ink-soft); margin: 0 0 6px; }
-  .lab-header h2 { font-size: 28px; margin: 0 0 4px; color: var(--navy); line-height: 1.2; }
-  .lab-header .companion { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--ink-soft); font-style: italic; margin-bottom: 30px; }
-
-  .field { margin-bottom: 28px; }
-  .field h3 {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: var(--navy);
-    border-bottom: 2px solid var(--line); padding-bottom: 6px; margin: 0 0 10px; display: flex; align-items: baseline; gap: 8px;
-  }
-  .field h3 .fn { color: var(--gold); font-weight: 700; }
-  .field p { margin: 0 0 10px; font-size: 15.5px; }
-
-  .exec-part { margin: 16px 0 20px; padding-left: 18px; border-left: 3px solid var(--line); }
-  .exec-part h4 { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--gold); margin: 0 0 8px; }
-  .exec-part .before { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-style: italic; color: var(--ink-soft); margin-bottom: 10px; }
-  .exec-part ol { margin: 0 0 10px; padding-left: 22px; }
-  .exec-part li { margin-bottom: 8px; font-size: 15px; }
-  .exec-part li label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
-  .exec-part li input[type=checkbox] { margin-top: 5px; flex-shrink: 0; }
-  .exec-part li span.done-text { text-decoration: line-through; color: #8b8878; }
-  .capture { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; color: var(--ink-soft); background: #F2F0E8; padding: 8px 12px; border-radius: 3px; }
-  .capture b { color: var(--ink); }
-
-  .callout { background: #F2F0E8; border-left: 4px solid var(--gold); padding: 14px 18px; border-radius: 3px; margin: 8px 0 18px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; color: var(--ink); }
-  .callout b { display: block; color: var(--navy); margin-bottom: 4px; font-size: 12px; }
-
-  textarea { width: 100%; min-height: 100px; font-family: Georgia, serif; font-size: 15px; border: 1.5px solid var(--line); border-radius: 3px; padding: 12px 14px; resize: vertical; background: var(--panel); color: var(--ink); }
-  textarea:focus { outline: none; border-color: var(--navy); }
-
-  .reveal-btn, .gate-btn, .action-btn {
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 600;
-    background: var(--navy); color: #fff; border: none; padding: 9px 18px; border-radius: 3px; cursor: pointer; margin-top: 10px;
-  }
-  .reveal-btn:hover, .gate-btn:hover, .action-btn:hover { background: var(--navy-deep); }
-
-  .model-box { display: none; margin-top: 12px; background: #EAF0EA; border-left: 4px solid var(--green); padding: 14px 18px; border-radius: 3px; }
-  .model-box.shown { display: block; }
-  .model-box .tag { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11px; font-weight: 700; color: var(--green); letter-spacing: 0.04em; margin-bottom: 6px; }
-  .model-box p { margin: 0; font-size: 15px; }
-
-  .challenge-quote { font-size: 17px; font-style: italic; color: var(--navy); border-left: 4px solid var(--navy); padding: 4px 0 4px 18px; margin: 6px 0 14px; }
-
-  .gate-section { margin-top: 36px; background: #2A2320; color: #F1EADD; padding: 20px 22px; border-radius: 3px; }
-  .gate-section .warn { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11.5px; color: var(--gold-light); margin-bottom: 10px; }
-  .gate-section .gq { font-size: 16px; font-style: italic; margin-bottom: 12px; }
-  .gate-section textarea { background: #3A322D; border-color: #574C41; color: #F1EADD; }
-  .gate-section .model-box { background: #33392E; border-left-color: var(--gold-light); }
-  .gate-section .model-box .tag { color: var(--gold-light); }
-  details.gate-toggle summary { cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12px; color: var(--gold-light); margin-bottom: 14px; }
-
-  .complete-row { display: flex; align-items: center; justify-content: space-between; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); }
-  .complete-row .status { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 12.5px; color: var(--ink-soft); }
-  .complete-row .status.done { color: var(--green); font-weight: 600; }
-
-  /* Course Guide mode */
-  .guide-box { background: #F2F0E8; border-left: 4px solid var(--gold); padding: 16px 20px; border-radius: 3px; margin: 0 0 22px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13.5px; }
-  .guide-box b.label { display: block; color: var(--navy); margin-bottom: 4px; font-size: 12px; }
-  .guide-box p { margin: 0; font-style: italic; }
-  .guide-sub { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; color: var(--navy); margin: 20px 0 10px; }
-  .guide-steps { margin: 0 0 16px; padding-left: 20px; }
-  .guide-steps li { margin-bottom: 9px; font-size: 15px; }
-  .guide-deliver { background: #EDF1EC; border-left: 4px solid var(--green); padding: 14px 18px; border-radius: 3px; margin: 18px 0 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13.5px; }
-  .guide-deliver b.label { display: block; color: var(--green); margin-bottom: 4px; font-size: 12px; }
-  .guide-deliver p { margin: 0; font-style: italic; }
-  .guide-goto { display: inline-block; margin-top: 16px; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; font-weight: 700; background: var(--gold); color: #fff; padding: 9px 16px; border-radius: 3px; cursor: pointer; border: none; }
-  .guide-goto:hover { background: var(--gold-light); }
-
-  @media (max-width: 880px) {
-    #wrap-app { flex-direction: column; }
-    .sidebar { width: 100%; height: auto; position: relative; padding-bottom: 10px; }
-    .main { padding: 30px 20px 80px; }
-    .lab-header h2 { font-size: 22px; }
-  }
-  @media (max-width: 600px) {
-    .rules-banner { flex-direction: column; gap: 10px; }
-    .field p, .exec-part li { font-size: 14.5px; }
+  .pwreq{font-size:0.78rem; color:var(--muted); margin-top:-8px; margin-bottom:14px;}
+  /* ---------- App shell ---------- */
+  #app-shell{display:none; min-height:100vh;}
+  header.topbar{background:linear-gradient(135deg,var(--navy),var(--navy-dark)); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+  header.topbar .brand{font-weight:700; font-size:1rem;}
+  header.topbar .brand span{display:block; font-weight:400; font-size:0.72rem; color:#C9D4E8;}
+  header.topbar .who{font-size:0.78rem; color:#C9D4E8; display:flex; align-items:center; gap:10px;}
+  header.topbar .who button{background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.3); padding:5px 12px; border-radius:6px; font-size:0.75rem; cursor:pointer; font-family:inherit;}
+  /* Row 1 (primary): track / phase selector */
+  .track-tabs{display:flex; gap:6px; padding:10px 20px; background:#EEF1F7; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .track-tabs button{font-family:inherit; font-size:0.78rem; font-weight:700; background:#fff; color:var(--navy); border:1.5px solid var(--border); padding:7px 14px; border-radius:16px; cursor:pointer;}
+  .track-tabs button.active{background:var(--gold); border-color:var(--gold); color:#fff;}
+  /* Row 2 (subordinate): mode selector, for the track chosen above */
+  .mode-tabs{display:flex; gap:6px; padding:10px 20px; background:#fff; border-bottom:1px solid var(--border); flex-wrap:wrap;}
+  .mode-tabs button{font-family:inherit; font-size:0.82rem; font-weight:700; background:#F1F1F1; color:var(--muted); border:none; padding:9px 16px; border-radius:20px; cursor:pointer;}
+  .mode-tabs button:hover{background:#E4E9F2;}
+  .mode-tabs button.active{background:var(--navy); color:#fff;}
+  main#main-content{max-width:900px; margin:0 auto; padding:20px 16px 80px;}
+  .card{background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:14px; box-shadow:0 1px 3px rgba(20,30,60,0.05);}
+  .callout{background:#EEF2FA; border-radius:10px; padding:12px 14px; font-size:0.85rem; margin-bottom:14px;}
+  .callout.warn{background:#FFF8EC; border:1px solid #F0DDB0;}
+  .callout b{display:block; color:var(--navy); margin-bottom:3px; font-size:0.78rem; text-transform:uppercase; letter-spacing:0.02em;}
+  h2.page-title{color:var(--navy); font-size:1.3rem; margin:0 0 4px;}
+  p.page-sub{color:var(--muted); font-size:0.85rem; margin:0 0 18px;}
+  .lab-card{display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border:1px solid var(--border); border-radius:12px; margin-bottom:10px; cursor:pointer; background:#fff;}
+  .lab-card:hover{border-color:var(--accent);}
+  .lab-card .l-title{font-weight:700; font-size:0.92rem;}
+  .lab-card .l-sub{font-size:0.78rem; color:var(--muted); margin-top:2px;}
+  .status-chip{font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; flex-shrink:0;}
+  .status-chip.done{background:#EAF6EE; color:var(--green);}
+  .status-chip.todo{background:#F1F1F1; color:var(--muted);}
+  .progress-bar{height:8px; background:var(--border); border-radius:4px; overflow:hidden; margin:8px 0 16px;}
+  .progress-fill{height:100%; background:var(--gold); transition:width 0.3s ease;}
+  .back-link{background:none; border:none; color:var(--blue); font-size:0.82rem; font-weight:700; cursor:pointer; padding:0 0 10px; display:block; font-family:inherit;}
+  /* book/module card fields */
+  .book-card .eyebrow{font-size:0.75rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.03em; margin:0 0 4px;}
+  .book-card h3.book-title{color:var(--navy); margin:0 0 16px; font-size:1.15rem;}
+  .field-row{margin-bottom:16px;}
+  .field-row .fn{display:inline-block; background:var(--navy); color:#fff; font-size:0.68rem; font-weight:700; padding:2px 7px; border-radius:4px; margin-right:6px;}
+  .field-row h4{display:inline; font-size:0.88rem; color:var(--navy); margin:0;}
+  .field-row p{margin:6px 0 0; font-size:0.88rem; line-height:1.5;}
+  .exec-part{margin-bottom:14px; padding-left:12px; border-left:3px solid var(--border);}
+  .exec-part h5{margin:0 0 6px; font-size:0.92rem; color:var(--navy);}
+  .exec-part .before{font-size:0.82rem; color:var(--muted); margin-bottom:8px; font-style:italic;}
+  .exec-part ol{margin:0 0 8px; padding-left:0; list-style:none;}
+  .exec-part li{margin-bottom:8px; font-size:0.86rem; line-height:1.5;}
+  .exec-part li label{display:flex; gap:8px; align-items:flex-start; cursor:pointer;}
+  .exec-part li input[type=checkbox]{margin-top:4px; flex-shrink:0;}
+  .exec-part li span.done-text{text-decoration:line-through; color:#98a0ac;}
+  .exec-part .capture{font-size:0.8rem; color:var(--muted); background:#F8F9FC; padding:8px 10px; border-radius:8px;}
+  .student-textarea{width:100%; min-height:80px; border:1px solid var(--border); border-radius:8px; padding:10px; font-family:inherit; font-size:0.86rem; margin-bottom:8px;}
+  .reveal-btn{background:#fff; color:var(--blue); border:1.5px solid var(--blue); padding:8px 14px; border-radius:8px; font-size:0.8rem; font-weight:700; cursor:pointer; font-family:inherit;}
+  .model-box{margin-top:10px; background:#F0F7F0; border:1px solid #CDE8D2; border-radius:10px; padding:12px 14px; display:none;}
+  .model-box.shown{display:block;}
+  .model-box .tag{font-size:0.68rem; font-weight:700; color:var(--green); text-transform:uppercase; margin-bottom:4px;}
+  .quote-box{font-style:italic; background:#F8F9FC; border-left:3px solid var(--accent); padding:10px 14px; border-radius:6px; font-size:0.88rem; margin-bottom:10px;}
+  .mark-complete-row{display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:18px;}
+  .mark-complete-row .status-note{font-size:0.8rem; color:var(--muted);}
+  .mark-complete-row .status-note.done{color:var(--green); font-weight:700;}
+  details.gate-toggle{background:#FFF8EC; border:1px solid #F0DDB0; border-radius:12px; padding:14px 16px; margin-top:20px;}
+  details.gate-toggle summary{cursor:pointer; font-size:0.82rem; font-weight:700; color:var(--navy);}
+  details.gate-toggle .gate-body{margin-top:12px;}
+  .guide-steps{margin:0 0 14px; padding-left:20px; font-size:0.88rem; line-height:1.6;}
+  .sync-note{font-size:0.72rem; color:#9DB4DC; margin-top:2px;}
+  @media (max-width:600px){
+    main#main-content{padding:16px 10px 80px;}
+    .track-tabs, .mode-tabs{padding:8px 12px;}
   }
 </style>
 </head>
 <body>
 
-<!-- ============ AUTH SCREENS ============ -->
-<div id="wrap-auth">
-  <div class="auth-inner">
-    <div class="auth-top">
-      <h1>GRC Security &amp; Fiori Student Console</h1>
-      <p>TIB Systems LLC &middot; A separate career-path program from SOX/ITGC</p>
-    </div>
-
-    <div id="view-checking" class="auth-card">
-      <div class="auth-spinner"></div>
-      <p style="text-align:center; color:var(--auth-muted); font-size:0.9rem;">Loading&hellip;</p>
-    </div>
-
-    <div id="view-login" class="auth-card hidden">
-      <h2>Sign In</h2>
-      <div id="login-msg"></div>
-      <label for="login-email">Email</label>
-      <input type="email" id="login-email" autocomplete="email">
-      <label for="login-pass">Password</label>
-      <input type="password" id="login-pass" autocomplete="current-password">
-      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
-      <div class="auth-link-row"><a onclick="showView('forgot')">Forgot your password?</a></div>
-      <div class="auth-link-row">New here? <a onclick="showView('signup')">Create an account</a></div>
-    </div>
-
-    <div id="view-signup" class="auth-card hidden">
-      <h2>Create Your Account</h2>
-      <p style="font-size:0.85rem; color:var(--auth-muted); margin:-4px 0 0;">Use the same email you used to enroll.</p>
-      <div id="signup-msg"></div>
-      <label for="signup-name">Full Name</label>
-      <input type="text" id="signup-name" autocomplete="name">
-      <label for="signup-email">Email</label>
-      <input type="email" id="signup-email" autocomplete="email">
-      <label for="signup-pass">Password</label>
-      <input type="password" id="signup-pass" autocomplete="new-password">
-      <p class="pwreq">At least 8 characters.</p>
-      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create Account &amp; Sign In</button>
-      <div class="auth-link-row">Already have an account? <a onclick="showView('login')">Sign in</a></div>
-    </div>
-
-    <div id="view-forgot" class="auth-card hidden">
-      <h2>Reset Your Password</h2>
-      <p style="font-size:0.85rem; color:var(--auth-muted); margin:-4px 0 0;">We'll email you a link to set a new password.</p>
-      <div id="forgot-msg"></div>
-      <label for="forgot-email">Email</label>
-      <input type="email" id="forgot-email" autocomplete="email">
-      <button class="auth-btn" id="forgot-btn" onclick="doForgot()">Send Reset Link</button>
-      <div class="auth-link-row"><a onclick="showView('login')">Back to sign in</a></div>
-    </div>
-
-    <div id="view-reset" class="auth-card hidden">
-      <h2>Set a New Password</h2>
-      <div id="reset-msg"></div>
-      <label for="reset-pass">New Password</label>
-      <input type="password" id="reset-pass" autocomplete="new-password">
-      <p class="pwreq">At least 8 characters.</p>
-      <label for="reset-pass2">Confirm New Password</label>
-      <input type="password" id="reset-pass2" autocomplete="new-password">
-      <button class="auth-btn" id="reset-btn" onclick="doReset()">Set Password &amp; Sign In</button>
-    </div>
-
-    <div id="view-noenroll" class="auth-card hidden">
-      <h2>We Couldn't Find Your Enrollment</h2>
-      <p style="font-size:0.9rem; line-height:1.55;">We don't see an active enrollment for this email yet. If you just enrolled, this can take a little while to process. If it's been longer than a day, reach out to us at <strong>support@tib-systems.com</strong> and we'll sort it out.</p>
-      <button class="auth-btn secondary" onclick="doSignOut()">Sign Out</button>
-    </div>
+<!-- ================= AUTH VIEWS ================= -->
+<div id="view-login" class="auth-wrap">
+  <div class="auth-card">
+    <h1>GRC Security &amp; Fiori Student Console</h1>
+    <p class="sub">TIB Systems LLC &middot; a separate career-path program from SOX/ITGC. Sign in to continue.</p>
+    <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <button class="btn block" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div id="login-msg"></div>
+    <div class="switch-link">New here? <a onclick="showView('signup')">Create an account</a> &middot; <a onclick="showView('forgot')">Forgot password?</a></div>
   </div>
 </div>
 
-<!-- ============ MAIN APP (post-login) ============ -->
-<div id="wrap-app" class="hidden">
-  <nav class="sidebar">
-    <div class="brand">
-      <p class="kicker">TIB SYSTEMS &middot; GRC SECURITY &amp; FIORI</p>
-      <h1>Student Console</h1>
-      <p class="who" id="who-email"></p>
-      <button class="signout" onclick="doSignOut()">Sign out</button>
-    </div>
-    <div class="mode-toggle">
-      <button id="mode-guide-btn" onclick="setMode('guide')">Course Guide</button>
-      <button id="mode-lab-btn" onclick="setMode('lab')">Primary Lab</button>
-    </div>
-    <div class="track-tabs sans" id="track-tabs"></div>
-    <div class="progress-block">
-      <div class="label"><span>Progress</span><span id="progress-count">0 of 8</span></div>
-      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-      <div id="sync-status" class="sync-status"></div>
-    </div>
-    <ul class="lab-nav" id="lab-nav"></ul>
-  </nav>
-  <main class="main" id="main"></main>
+<div id="view-signup" class="auth-wrap hidden">
+  <div class="auth-card">
+    <h1>Create Your Account</h1>
+    <p class="sub">Use the same email you used to enroll.</p>
+    <div class="field"><label>Full Name</label><input type="text" id="signup-name" placeholder="Jane Doe"></div>
+    <div class="field"><label>Email</label><input type="email" id="signup-email" placeholder="you@example.com"></div>
+    <div class="field"><label>Password</label><input type="password" id="signup-pass" placeholder="At least 8 characters"></div>
+    <button class="btn block" id="signup-btn" onclick="doSignup()">Create Account &amp; Sign In</button>
+    <div id="signup-msg"></div>
+    <div class="switch-link">Already have an account? <a onclick="showView('login')">Sign in</a></div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<div id="view-forgot" class="auth-wrap hidden">
+  <div class="auth-card">
+    <h1>Reset Your Password</h1>
+    <p class="sub">We'll email you a reset link.</p>
+    <div class="field"><label>Email</label><input type="email" id="forgot-email" placeholder="you@example.com"></div>
+    <button class="btn block" id="forgot-btn" onclick="doForgot()">Send Reset Link</button>
+    <div id="forgot-msg"></div>
+    <div class="switch-link"><a onclick="showView('login')">Back to sign in</a></div>
+  </div>
+</div>
+
+<div id="view-reset" class="auth-wrap hidden">
+  <div class="auth-card">
+    <h1>Set a New Password</h1>
+    <div class="field"><label>New Password</label><input type="password" id="reset-pass" placeholder="At least 8 characters"></div>
+    <div class="field"><label>Confirm Password</label><input type="password" id="reset-pass2" placeholder="Repeat password"></div>
+    <button class="btn block" id="reset-btn" onclick="doReset()">Set Password &amp; Sign In</button>
+    <div id="reset-msg"></div>
+  </div>
+</div>
+
+<div id="view-checking" class="auth-wrap hidden">
+  <div class="auth-card" style="text-align:center;">
+    <div class="spinner"></div>
+    <p style="color:var(--muted);">Checking your enrollment&hellip;</p>
+  </div>
+</div>
+
+<div id="view-noenroll" class="auth-wrap hidden">
+  <div class="auth-card" style="text-align:center;">
+    <h1>No Active Enrollment Found</h1>
+    <p class="sub">We don't see an active GRC Security &amp; Fiori enrollment for this email yet. If you just enrolled, this can take a little while to process. If it's been longer than a day, reach out to us at support@tib-systems.com.</p>
+    <button class="btn secondary block" onclick="doSignOut()">Sign Out</button>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="app-shell">
+  <header class="topbar">
+    <div class="brand">GRC Security &amp; Fiori<span>Student Console &middot; TIB Systems</span></div>
+    <div class="who"><span id="who-email"></span><button onclick="doSignOut()">Sign out</button></div>
+  </header>
+  <div class="track-tabs" id="track-tabs"></div>
+  <div class="mode-tabs" id="mode-tabs"></div>
+  <main id="main-content"></main>
+</div>
+
 <script>
-  var LABS = [];
-  var FOUNDATIONS = [];
-  var currentTrack = '0';
+  var GRC_SUPABASE_URL = "https://blfgwysgekfqhcafofhe.supabase.co";
+  var GRC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI";
+  var CONSOLE_URL = "https://REPLACE-WITH-GRC-SECURITY-STUDENT-CONSOLE-URL.vercel.app/";
+  var ELECTIVE_COURSE_ID = "grc_security_primarylab";
+
+  var grc = window.supabase.createClient(GRC_SUPABASE_URL, GRC_SUPABASE_ANON_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+  });
+
+  var TRACKS_ORDER = ['0','A','B','C','D'];
   var TRACK_META = {
     '0': { name: 'Foundations', type: 'foundations' },
     A: { name: 'Design &amp; Blueprint', type: 'scenario', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
@@ -298,15 +204,46 @@
     D: { name: 'Post-Go-Live Support', type: 'scenario', banner: 'If you can\'t state what\'s broken, why it matters, and what the fix needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Ticket', 4: 'Fix Objective', 5: 'Target Design', 9: 'Fix Approach', 10: 'Verification Evidence', 13: 'Resolution' } }
   };
-  var GRC_SUPABASE_URL = "https://blfgwysgekfqhcafofhe.supabase.co";
-  var GRC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI";
-  var CONSOLE_URL = "https://REPLACE-WITH-GRC-SECURITY-STUDENT-CONSOLE-URL.vercel.app/";
-  var ELECTIVE_COURSE_ID = "grc_security_primarylab"; // kept for schema symmetry; this console has one course today
 
-  var grc = window.supabase.createClient(GRC_SUPABASE_URL, GRC_SUPABASE_ANON_KEY, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
-  });
+  var userEmail = null;
+  var currentTrack = '0';
+  var currentMode = 'guide';  // 'guide' | 'lab'
+  var currentLab = null;      // null = list view; a module/lab number = detail view
 
+  var LABS = [];
+  var FOUNDATIONS = [];
+
+  // ---------- localStorage: granular per-lab UI state (checkboxes, drafts) ----------
+  var STORAGE_KEY = 'grcSecurityCombined_v2';
+  function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; } }
+  function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+  var state = loadState();
+  function labState(labNum){
+    var key = currentTrack + '_lab' + labNum;
+    if(!state[key]) state[key] = { steps:{}, conclusion:'', challengeResponse:'', gateResponse:'', complete:false };
+    return state[key];
+  }
+
+  function esc(s){ var d = document.createElement('div'); d.textContent = (s===null||s===undefined)?'':s; return d.innerHTML; }
+  function showView(id){
+    ['login','signup','forgot','reset','checking','noenroll'].forEach(function(v){
+      document.getElementById('view-' + v).classList.add('hidden');
+    });
+    document.getElementById('app-shell').style.display = 'none';
+    document.getElementById('view-' + id).classList.remove('hidden');
+  }
+  function msg(id, text, kind){
+    var el = document.getElementById(id);
+    el.innerHTML = '<div class="msg ' + kind + '">' + esc(text) + '</div>';
+  }
+  function setBusy(id, busy, label){
+    var b = document.getElementById(id);
+    if(!b.dataset.orig) b.dataset.orig = b.textContent;
+    b.disabled = busy;
+    b.textContent = busy ? label : b.dataset.orig;
+  }
+
+  // ---------- CONTENT LOADING ----------
   async function loadLabContent(){
     if (TRACK_META[currentTrack].type === 'foundations') {
       var fres = await grc.from('grc_foundations_content').select('*').order('module_number');
@@ -335,42 +272,6 @@
     FOUNDATIONS = [];
   }
 
-  var userEmail = null;
-  var currentLab = 1;
-  var currentMode = 'guide'; // 'guide' or 'lab'
-
-  // ---------- localStorage: granular per-lab UI state (checkboxes, drafts) ----------
-  var STORAGE_KEY = 'grcSecurityCombined_v1';
-  function loadState(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ return {}; } }
-  function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
-  var state = loadState();
-  function labState(labNum){
-    var key = currentTrack + '_lab' + labNum;
-    if(!state[key]) state[key] = { steps:{}, conclusion:'', challengeResponse:'', gateResponse:'', complete:false };
-    return state[key];
-  }
-
-  function esc(s){ var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-  // ---------- AUTH VIEW SWITCHING ----------
-  function showView(name){
-    ['login','signup','forgot','reset','noenroll','checking'].forEach(function(v){
-      document.getElementById('view-' + v).classList.add('hidden');
-    });
-    document.getElementById('wrap-auth').classList.remove('hidden');
-    document.getElementById('wrap-app').classList.add('hidden');
-    document.getElementById('view-' + name).classList.remove('hidden');
-    ['login-msg','signup-msg','forgot-msg','reset-msg'].forEach(function(id){
-      var el = document.getElementById(id); if(el) el.innerHTML = '';
-    });
-  }
-  function msg(id, text, kind){ document.getElementById(id).innerHTML = '<div class="auth-msg ' + kind + '">' + text + '</div>'; }
-  function setBusy(btnId, busy, label){
-    var b = document.getElementById(btnId);
-    b.disabled = busy;
-    if(label) b.textContent = busy ? label : (b.dataset.orig || b.textContent);
-  }
-
   // ---------- AUTH ACTIONS ----------
   async function doLogin(){
     var email = document.getElementById('login-email').value.trim();
@@ -395,7 +296,7 @@
     if(res.error){
       var already = /already registered|already exists|user already registered/i.test(res.error.message || '');
       if(already){
-        msg('signup-msg', "Looks like you already have a TIB Systems account (from another program). Try signing in below with your existing password, or use \"Forgot your password?\"", 'info');
+        msg('signup-msg', "Looks like you already have a TIB Systems account (from another program). Try signing in below, or use \"Forgot your password?\"", 'info');
       } else {
         msg('signup-msg', res.error.message, 'error');
       }
@@ -439,8 +340,6 @@
   // ---------- ENROLLMENT + APP BOOTSTRAP ----------
   async function afterAuth(){
     showView('checking');
-    document.getElementById('view-checking').classList.remove('hidden');
-
     var userRes = await grc.auth.getUser();
     var user = userRes.data ? userRes.data.user : null;
     if(!user){ showView('login'); return; }
@@ -460,16 +359,19 @@
     }
 
     userEmail = user.email;
-    document.getElementById('wrap-auth').classList.add('hidden');
-    document.getElementById('wrap-app').classList.remove('hidden');
+    document.getElementById('app-shell').style.display = 'block';
+    ['login','signup','forgot','reset','checking','noenroll'].forEach(function(v){
+      document.getElementById('view-' + v).classList.add('hidden');
+    });
     document.getElementById('who-email').textContent = userEmail;
-    var mainEl = document.getElementById('main');
-    if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading lab content&hellip;</p>';
+
+    var main = document.getElementById('main-content');
+    main.innerHTML = '<p style="padding:24px;color:var(--muted);">Loading lab content&hellip;</p>';
     try {
       await loadLabContent();
     } catch (e) {
       console.error('Failed to load lab content:', e);
-      if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:#a33;">Could not load lab content. Check your connection and reload the page.</p>';
+      main.innerHTML = '<p style="padding:24px;color:var(--red);">Could not load lab content. Check your connection and reload the page.</p>';
       return;
     }
     await pullRemoteProgress();
@@ -489,16 +391,11 @@
         if(completed[currentTrack + '_lab' + lab.lab]) ls.complete = true;
       });
       FOUNDATIONS.forEach(function(mod){
-        var ls = labState('f' + mod.module);
+        var ls = labState(mod.module);
         if(completed[currentTrack + '_lab' + mod.module]) ls.complete = true;
       });
       saveState(state);
-      document.getElementById('sync-status').textContent = 'Synced as ' + userEmail;
-      document.getElementById('sync-status').className = 'sync-status on';
-    }catch(e){
-      console.warn('Could not pull remote progress:', e);
-      document.getElementById('sync-status').textContent = 'Progress saved on this device only';
-    }
+    }catch(e){ console.warn('Could not pull remote progress:', e); }
   }
 
   async function pushLabCompletion(labNum, complete){
@@ -516,309 +413,298 @@
     }catch(e){ console.warn('Could not sync completion:', e); }
   }
 
-  // ---------- TRACK SWITCHING ----------
+  // ---------- TOP-LEVEL NAV: TRACK (row 1, primary) THEN MODE (row 2, subordinate) ----------
   function renderTrackTabs(){
     var wrap = document.getElementById('track-tabs');
     wrap.innerHTML = '';
-    ['0','A','B','C','D'].forEach(function(t){
+    TRACKS_ORDER.forEach(function(t){
       var btn = document.createElement('button');
-      btn.className = (t === currentTrack ? 'active' : '');
       btn.innerHTML = TRACK_META[t].name;
+      btn.className = (t === currentTrack ? 'active' : '');
       btn.onclick = async function(){
         if(t === currentTrack) return;
         currentTrack = t;
-        currentLab = 1;
-        var mainEl = document.getElementById('main');
-        if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">Loading content&hellip;</p>';
-        try {
+        currentLab = null;
+        var main = document.getElementById('main-content');
+        main.innerHTML = '<p style="padding:24px;color:var(--muted);">Loading content&hellip;</p>';
+        try{
           await loadLabContent();
-        } catch(e) {
+        }catch(e){
           console.error('Failed to load content:', e);
-          if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:#a33;">Could not load content for this track. Check your connection and reload the page.</p>';
+          main.innerHTML = '<p style="padding:24px;color:var(--red);">Could not load content for this track. Check your connection and reload the page.</p>';
           return;
         }
         await pullRemoteProgress();
         render();
-        window.scrollTo(0,0);
       };
       wrap.appendChild(btn);
     });
   }
 
-  // ---------- MODE + NAV ----------
-  function setMode(m){ currentMode = m; render(); }
-
-  function renderNav(){
-    renderTrackTabs();
-    var nav = document.getElementById('lab-nav');
-    nav.innerHTML = '';
-    var isFoundations = TRACK_META[currentTrack].type === 'foundations';
-    var items = isFoundations ? FOUNDATIONS : LABS;
-    if (items.length === 0) {
-      var li0 = document.createElement('li');
-      li0.innerHTML = '<p class="sans" style="padding:10px 12px;color:#B9B2A0;font-size:13px;">No content published in this track yet.</p>';
-      nav.appendChild(li0);
-      document.getElementById('progress-count').textContent = '0 of 0';
-      document.getElementById('progress-fill').style.width = '0%';
-      document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
-      document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
-      return;
-    }
-    if (isFoundations) {
-      FOUNDATIONS.forEach(function(mod){
-        var ls = labState('f' + mod.module);
-        var li = document.createElement('li');
-        var btn = document.createElement('button');
-        btn.className = (mod.module === currentLab ? 'active ' : '') + (ls.complete ? 'done' : '');
-        btn.innerHTML = '<span class="num">' + mod.module + '</span><span class="dom">' + esc(mod.title) + '</span><span class="check"></span>';
-        btn.onclick = function(){ currentLab = mod.module; render(); window.scrollTo(0,0); };
-        li.appendChild(btn);
-        nav.appendChild(li);
-      });
-      var doneCountF = FOUNDATIONS.filter(function(m){ return labState('f' + m.module).complete; }).length;
-      document.getElementById('progress-count').textContent = doneCountF + ' of ' + FOUNDATIONS.length;
-      document.getElementById('progress-fill').style.width = (doneCountF / FOUNDATIONS.length * 100) + '%';
-      document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
-      document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
-      return;
-    }
-    LABS.forEach(function(lab){
-      var ls = labState(lab.lab);
-      var li = document.createElement('li');
+  function renderModeTabs(){
+    var wrap = document.getElementById('mode-tabs');
+    wrap.innerHTML = '';
+    [['guide','Course Guide'],['lab','Primary Lab']].forEach(function(m){
       var btn = document.createElement('button');
-      btn.className = (lab.lab === currentLab ? 'active ' : '') + (ls.complete ? 'done' : '');
-      btn.innerHTML = '<span class="num">' + lab.lab + '</span><span class="dom">' + esc(lab.domain) + '</span><span class="check"></span>';
-      btn.onclick = function(){ currentLab = lab.lab; render(); window.scrollTo(0,0); };
-      li.appendChild(btn);
-      nav.appendChild(li);
+      btn.textContent = m[1];
+      btn.className = (m[0] === currentMode ? 'active' : '');
+      btn.onclick = function(){ currentMode = m[0]; render(); };
+      wrap.appendChild(btn);
     });
-    var doneCount = LABS.filter(function(l){ return labState(l.lab).complete; }).length;
-    document.getElementById('progress-count').textContent = doneCount + ' of ' + LABS.length;
-    document.getElementById('progress-fill').style.width = (doneCount / LABS.length * 100) + '%';
-    document.getElementById('mode-guide-btn').className = currentMode === 'guide' ? 'active' : '';
-    document.getElementById('mode-lab-btn').className = currentMode === 'lab' ? 'active' : '';
   }
 
+  // ---------- MASTER RENDER ----------
   function render(){
-    renderNav();
+    renderTrackTabs();
+    renderModeTabs();
+    var main = document.getElementById('main-content');
+    main.innerHTML = '';
+    window.scrollTo(0,0);
+
     var isFoundations = TRACK_META[currentTrack].type === 'foundations';
     var items = isFoundations ? FOUNDATIONS : LABS;
-    if (items.length === 0) {
-      var mainEl = document.getElementById('main');
-      if (mainEl) mainEl.innerHTML = '<p style="padding:24px;color:var(--ink-soft);">No content published in this track yet.</p>';
+    if(items.length === 0){
+      main.innerHTML = '<p style="padding:24px;color:var(--muted);">No content published in this track yet.</p>';
       return;
     }
-    if (isFoundations) { if (currentMode === 'guide') renderFoundationsGuide(); else renderFoundationsMain(); return; }
-    if(currentMode === 'guide') renderGuideMain(); else renderLabMain();
+
+    if(currentLab === null){
+      return isFoundations ? renderFoundationsList(main) : renderLabList(main);
+    }
+    if(isFoundations){
+      var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0];
+      if(!mod){ currentLab = null; return render(); }
+      return currentMode === 'guide' ? renderFoundationsGuideDetail(main, mod) : renderFoundationsLabDetail(main, mod);
+    } else {
+      var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0];
+      if(!lab){ currentLab = null; return render(); }
+      return currentMode === 'guide' ? renderLabGuideDetail(main, lab) : renderLabLabDetail(main, lab);
+    }
   }
 
-  // ---------- FOUNDATIONS MODE (Track 0) ----------
-  // ---------- FOUNDATIONS MODE (Track 0) — Guide view (summary, no checkboxes) ----------
-  function renderFoundationsGuide(){
-    var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0] || FOUNDATIONS[0];
-    currentLab = mod.module;
-    var main = document.getElementById('main');
-    var html = '';
+  // ================= FOUNDATIONS: LIST =================
+  function renderFoundationsList(main){
+    var html = '<div class="callout"><b>Track 0 &middot; Foundations</b>These modules teach SAP mechanics &mdash; navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW &mdash; that Tracks A through D assume you already have. Work in order: check each module\'s Prerequisites before starting.</div>';
 
-    html += '<div class="rules-banner sans">';
-    html += '<div><b>Track 0 — Foundations.</b> These modules teach the SAP mechanics — navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW — that Tracks A through D assume you already have.</div>';
-    html += '<div><b>Work in order.</b> Several modules explicitly build on the one before it — check each module\'s Prerequisites before starting.</div>';
-    html += '</div>';
+    if(currentMode === 'guide'){
+      html += '<h2 class="page-title">Track 0 &mdash; Foundations</h2>';
+      html += '<p class="page-sub">Course Guide &mdash; summary view. Switch to Primary Lab for the full interactive walkthrough.</p>';
+      html += '<div class="card">';
+      FOUNDATIONS.forEach(function(m){
+        html += '<div class="lab-card" onclick="currentLab=' + m.module + '; render();">';
+        html += '<div><div class="l-title">Module ' + m.module + ' &mdash; ' + esc(m.title) + '</div><div class="l-sub">' + esc(m.transaction) + '</div></div>';
+        html += '<span class="status-chip todo">Guide</span></div>';
+      });
+      html += '</div>';
+    } else {
+      var doneCount = FOUNDATIONS.filter(function(m){ return labState(m.module).complete; }).length;
+      html += '<h2 class="page-title">Track 0 &mdash; Foundations</h2>';
+      html += '<p class="page-sub">Primary Lab &mdash; full interactive walkthrough</p>';
+      html += '<div class="card"><div style="font-weight:700;margin-bottom:4px;">Progress: ' + doneCount + ' of ' + FOUNDATIONS.length + ' complete</div>';
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + Math.round(doneCount/Math.max(FOUNDATIONS.length,1)*100) + '%;"></div></div></div>';
+      html += '<div class="card">';
+      FOUNDATIONS.forEach(function(m){
+        var done = labState(m.module).complete;
+        html += '<div class="lab-card" onclick="currentLab=' + m.module + '; render();">';
+        html += '<div><div class="l-title">Module ' + m.module + ' &mdash; ' + esc(m.title) + '</div><div class="l-sub">' + esc(m.transaction) + '</div></div>';
+        html += '<span class="status-chip ' + (done?'done':'todo') + '">' + (done?'Complete':'Not started') + '</span></div>';
+      });
+      html += '</div>';
+    }
+    main.innerHTML = html;
+  }
 
-    html += '<div class="lab-header"><p class="eyebrow">Track: Foundations &middot; Transaction/App: ' + esc(mod.transaction) + '</p><h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2></div>';
-
-    html += '<div class="guide-box"><b class="label">Overview</b><p>' + esc(mod.overview) + '</p></div>';
-    html += '<div class="guide-box"><b class="label">Prerequisites</b><p>' + esc(mod.prerequisites) + '</p></div>';
-
-    html += '<div class="guide-sub">Work Through, In Order</div>';
-    html += '<ul class="guide-steps">';
-    mod.walkthrough.forEach(function(part){
-      html += '<li><b>' + esc(part.title) + '</b> — ' + esc(part.before) + '</li>';
+  // ================= FOUNDATIONS: GUIDE DETAIL =================
+  function renderFoundationsGuideDetail(main, m){
+    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += '<p class="book-card eyebrow">FOUNDATIONS &middot; MODULE ' + m.module + '</p>';
+    html += '<h2 class="page-title">' + esc(m.title) + '</h2>';
+    html += '<p class="page-sub">Transaction/App: ' + esc(m.transaction) + '</p>';
+    html += '<div class="card book-card">';
+    html += '<div class="field-row"><h4>Overview</h4><p>' + esc(m.overview) + '</p></div>';
+    html += '<div class="field-row"><h4>Prerequisites</h4><p>' + esc(m.prerequisites) + '</p></div>';
+    html += '<div class="field-row"><h4>Work Through, In Order</h4><ul class="guide-steps">';
+    (m.walkthrough || []).forEach(function(part){
+      html += '<li><b>' + esc(part.title) + '</b> &mdash; ' + esc(part.before) + '</li>';
     });
-    html += '<li>Complete the practice exercise for this module before moving to the next one.</li>';
-    html += '</ul>';
-
-    html += '<div class="guide-deliver"><b class="label">Practice Exercise</b><p>' + esc(mod.practice_exercise) + '</p></div>';
-
-    html += '<button class="guide-goto" onclick="setMode(\'lab\')">Open This Module &rarr;</button>';
-
+    html += '<li>Complete the practice exercise for this module before moving to the next one.</li></ul></div>';
+    html += '<div class="callout"><b>Practice Exercise</b>' + esc(m.practice_exercise) + '</div>';
+    html += '<button class="btn" onclick="currentMode=\'lab\'; render();">Open This Module in Primary Lab &rarr;</button>';
+    html += '</div>';
     main.innerHTML = html;
   }
 
-  // ---------- FOUNDATIONS MODE (Track 0) — Primary Lab view (full walkthrough) ----------
-  function renderFoundationsMain(){
-    var mod = FOUNDATIONS.filter(function(m){ return m.module === currentLab; })[0] || FOUNDATIONS[0];
-    currentLab = mod.module;
-    var ls = labState('f' + mod.module);
-    var main = document.getElementById('main');
-    var html = '';
-
-    html += '<div class="rules-banner sans">';
-    html += '<div><b>Track 0 — Foundations.</b> These modules teach the SAP mechanics — navigation, PFCG, SU24, GRC AC, MSMP, Firefighter, Fiori Launchpad Designer, LSMW — that Tracks A through D assume you already have.</div>';
-    html += '<div><b>Work in order.</b> Several modules explicitly build on the one before it — check each module\'s Prerequisites before starting.</div>';
+  // ================= FOUNDATIONS: LAB DETAIL =================
+  function execPartHtml(part, pi, ls){
+    var html = '<div class="exec-part"><h5>' + esc(part.title) + '</h5>';
+    if(part.before) html += '<p class="before"><b>Before you start:</b> ' + esc(part.before) + '</p>';
+    html += '<ol>';
+    (part.steps || []).forEach(function(s, si){
+      var stepKey = pi + '_' + si;
+      var checked = ls.steps[stepKey] ? 'checked' : '';
+      var doneClass = ls.steps[stepKey] ? 'done-text' : '';
+      html += '<li><label><input type="checkbox" data-step="' + stepKey + '" ' + checked + '><span class="' + doneClass + '">' + esc(s) + '</span></label></li>';
+    });
+    html += '</ol>';
+    if(part.capture) html += '<p class="capture"><b>What to capture:</b> ' + esc(part.capture) + '</p>';
     html += '</div>';
+    return html;
+  }
 
-    html += '<div class="lab-header"><p class="eyebrow">Track: Foundations &middot; Transaction/App: ' + esc(mod.transaction) + '</p><h2>Module ' + mod.module + ' — ' + esc(mod.title) + '</h2></div>';
-
-    html += '<div class="field"><h3><span class="fn">1</span> Overview</h3><p>' + esc(mod.overview) + '</p></div>';
-    html += '<div class="field"><h3><span class="fn">2</span> Prerequisites</h3><p>' + esc(mod.prerequisites) + '</p></div>';
-
-    html += '<div class="field"><h3><span class="fn">3</span> Step-by-Step Walkthrough</h3>';
-    html += '<div class="callout"><b class="sans">HANDS-ON — PRACTICE NAMESPACE</b>Follow every step in your assigned ZZ_TRAIN_ namespace or training client. Never perform these steps against a production object.</div>';
-    mod.walkthrough.forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
+  function renderFoundationsLabDetail(main, m){
+    var ls = labState(m.module);
+    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += '<p class="book-card eyebrow">FOUNDATIONS &middot; MODULE ' + m.module + '</p>';
+    html += '<h2 class="page-title">' + esc(m.title) + '</h2>';
+    html += '<p class="page-sub">Transaction/App: ' + esc(m.transaction) + '</p>';
+    html += '<div class="card book-card">';
+    html += '<div class="callout warn"><b>Display only.</b> If you land on a screen with a button that changes something, do not press it.</div>';
+    html += '<div class="field-row"><h4>Overview</h4><p>' + esc(m.overview) + '</p></div>';
+    html += '<div class="field-row"><h4>Prerequisites</h4><p>' + esc(m.prerequisites) + '</p></div>';
+    html += '<div class="field-row"><h4>Step-by-Step Walkthrough</h4>';
+    html += '<div class="callout warn"><b>Hands-on &mdash; practice namespace</b>Follow every step in your assigned ZZ_TRAIN_ namespace or training client. Never perform these steps against a production object.</div>';
+    (m.walkthrough || []).forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
     html += '</div>';
-
-    html += '<div class="field"><h3><span class="fn">4</span> Practice Exercise</h3><p>' + esc(mod.practice_exercise) + '</p></div>';
-    html += '<div class="field"><h3><span class="fn">5</span> Common Mistakes</h3><p>' + esc(mod.common_mistakes) + '</p></div>';
-    html += '<div class="field"><h3><span class="fn">6</span> Quick Reference</h3><p>' + esc(mod.quick_reference) + '</p></div>';
-
-    html += '<div class="field"><label class="sans" style="display:flex;align-items:center;gap:8px;font-size:14px;">';
-    html += '<input type="checkbox" id="complete-toggle" ' + (ls.complete ? 'checked' : '') + '> Mark this module complete';
-    html += '</label></div>';
-
+    html += '<div class="field-row"><h4>Practice Exercise</h4><p>' + esc(m.practice_exercise) + '</p></div>';
+    html += '<div class="field-row"><h4>Common Mistakes</h4><p>' + esc(m.common_mistakes) + '</p></div>';
+    html += '<div class="field-row"><h4>Quick Reference</h4><p>' + esc(m.quick_reference) + '</p></div>';
+    html += '<div class="mark-complete-row"><span class="status-note ' + (ls.complete?'done':'') + '">' + (ls.complete ? '\u2713 Module marked complete' : 'Not yet marked complete') + '</span>';
+    html += '<button class="btn ' + (ls.complete?'secondary':'') + '" id="complete-btn">' + (ls.complete ? 'Mark as Not Complete' : 'Mark Module Complete') + '</button></div>';
+    html += '</div>';
     main.innerHTML = html;
 
-    mod.walkthrough.forEach(function(part, pi){
-      part.steps.forEach(function(s, si){
+    (m.walkthrough || []).forEach(function(part, pi){
+      (part.steps || []).forEach(function(s, si){
         var stepKey = pi + '_' + si;
         var cb = main.querySelector('input[data-step="' + stepKey + '"]');
-        if (cb) cb.addEventListener('change', function(e){
+        if(cb) cb.addEventListener('change', function(e){
           ls.steps[stepKey] = e.target.checked;
           saveState(state);
           e.target.nextElementSibling.className = e.target.checked ? 'done-text' : '';
         });
       });
     });
-    var completeToggle = document.getElementById('complete-toggle');
-    if (completeToggle) completeToggle.addEventListener('change', function(e){
-      ls.complete = e.target.checked;
+    document.getElementById('complete-btn').addEventListener('click', function(){
+      ls.complete = !ls.complete;
       saveState(state);
-      pushLabCompletion(mod.module, ls.complete);
+      pushLabCompletion(m.module, ls.complete);
       render();
     });
   }
 
-  // ---------- COURSE GUIDE MODE ----------
-  function renderGuideMain(){
-    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0] || LABS[0];
+  // ================= SCENARIO TRACKS (A-D): LIST =================
+  function renderLabList(main){
+    var tm = TRACK_META[currentTrack];
+    var html = '<div class="callout warn"><b>Planning card before transaction code</b>' + tm.banner + '</div>';
 
-    currentLab = lab.lab;
-    var main = document.getElementById('main');
-    var html = '';
-    html += '<div class="rules-banner sans">';
-    html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
-    html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
-    html += '</div>';
-    html += '<div class="lab-header"><p class="eyebrow">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2></div>';
+    if(currentMode === 'guide'){
+      html += '<h2 class="page-title">' + tm.name + '</h2>';
+      html += '<p class="page-sub">Course Guide &mdash; summary view. Switch to Primary Lab for the full interactive walkthrough.</p>';
+      html += '<div class="card">';
+      LABS.forEach(function(l){
+        html += '<div class="lab-card" onclick="currentLab=' + l.lab + '; render();">';
+        html += '<div><div class="l-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</div><div class="l-sub">' + esc(l.domain) + '</div></div>';
+        html += '<span class="status-chip todo">Guide</span></div>';
+      });
+      html += '</div>';
+    } else {
+      var doneCount = LABS.filter(function(l){ return labState(l.lab).complete; }).length;
+      html += '<h2 class="page-title">' + tm.name + '</h2>';
+      html += '<p class="page-sub">Primary Lab &mdash; full interactive walkthrough</p>';
+      html += '<div class="card"><div style="font-weight:700;margin-bottom:4px;">Progress: ' + doneCount + ' of ' + LABS.length + ' complete</div>';
+      html += '<div class="progress-bar"><div class="progress-fill" style="width:' + Math.round(doneCount/Math.max(LABS.length,1)*100) + '%;"></div></div></div>';
+      html += '<div class="card">';
+      LABS.forEach(function(l){
+        var done = labState(l.lab).complete;
+        html += '<div class="lab-card" onclick="currentLab=' + l.lab + '; render();">';
+        html += '<div><div class="l-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</div><div class="l-sub">' + esc(l.domain) + '</div></div>';
+        html += '<span class="status-chip ' + (done?'done':'todo') + '">' + (done?'Complete':'Not started') + '</span></div>';
+      });
+      html += '</div>';
+    }
+    main.innerHTML = html;
+  }
 
-    html += '<div class="guide-box"><b class="label">Read Before Working This Lab</b><p>' + esc(lab.ticket) + '</p></div>';
-
-    html += '<div class="guide-sub">Work Through, In Order</div>';
-    html += '<ul class="guide-steps">';
+  // ================= SCENARIO TRACKS: GUIDE DETAIL =================
+  function renderLabGuideDetail(main, l){
+    var tm = TRACK_META[currentTrack];
+    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += '<p class="book-card eyebrow">' + esc(tm.name.replace(/&amp;/g,'&')) + ' &middot; ' + esc(l.domain) + '</p>';
+    html += '<h2 class="page-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</h2>';
+    html += '<div class="card book-card">';
+    html += '<div class="callout"><b>Read Before Working This Lab</b>' + esc(l.ticket) + '</div>';
+    html += '<div class="field-row"><h4>Work Through, In Order</h4><ul class="guide-steps">';
     html += '<li>Start with the facilitator-led demo: watch fields 1&ndash;10 worked through, then fields 11&ndash;12 executed live on the training server.</li>';
     html += '<li>Independently, write your own Field 13 write-up before revealing the Primary Lab\'s model write-up.</li>';
-    html += '<li>Independently, answer the Field 14 stakeholder pushback — &ldquo;' + esc(lab.pushback) + '&rdquo; — before revealing the model response.</li>';
+    html += '<li>Independently, answer the Field 14 stakeholder pushback &mdash; &ldquo;' + esc(l.pushback) + '&rdquo; &mdash; before revealing the model response.</li>';
     html += '<li>Work Parts A, B, and C of the Execution Steps yourself, end to end, in your assigned ZZ_TRAIN_ practice namespace.</li>';
-    html += '<li>Be ready for the facilitator\'s Field 15 escalation-conversation question once your independent run is complete.</li>';
-    html += '</ul>';
-
-    html += '<div class="guide-sub">You Should Be Able To</div>';
-    html += '<ul class="guide-steps">';
-    html += '<li>Work through this domain\'s core challenge using the full planning card (fields 1 through 10), not just the execution steps.</li>';
-    html += '<li>Execute the lab\'s fields 1&ndash;10 analysis and Part C build entirely on your own, without asking what to do next.</li>';
-    html += '<li>Write a Field 13 write-up before looking at the model, and compare your own thinking against it honestly.</li>';
-    html += '<li>Answer the stakeholder pushback and, when asked, the facilitator-only escalation question for this Lab.</li>';
-    html += '</ul>';
-
-    html += '<div class="guide-deliver"><b class="label">Suggested Deliverable Before Moving to the Next Lab</b><p>A written Field 13 write-up for ' + esc(lab.book) + ' — in your own words, completed before revealing the Primary Lab\'s model write-up. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</p></div>';
-
-    html += '<button class="guide-goto" onclick="setMode(\'lab\')">Open This Lab &rarr;</button>';
-
+    html += '<li>Be ready for the facilitator\'s Field 15 escalation conversation once your independent run is complete.</li>';
+    html += '</ul></div>';
+    html += '<div class="callout"><b>Suggested Deliverable Before Moving to the Next Lab</b>A written Field 13 write-up for ' + esc(l.book) + ' &mdash; in your own words, completed before revealing the Primary Lab\'s model write-up. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</div>';
+    html += '<button class="btn" onclick="currentMode=\'lab\'; render();">Open This Lab in Primary Lab &rarr;</button>';
+    html += '</div>';
     main.innerHTML = html;
   }
 
-  // ---------- PRIMARY LAB MODE ----------
-  function execPartHtml(part, pi, ls){
-    var html = '';
-    html += '<div class="exec-part"><h4>' + esc(part.title) + '</h4>';
-    html += '<p class="before"><b>Before you start:</b> ' + esc(part.before) + '</p><ol>';
-    part.steps.forEach(function(s, si){
-      var stepKey = pi + '_' + si;
-      var checked = ls.steps[stepKey] ? 'checked' : '';
-      var doneClass = ls.steps[stepKey] ? 'done-text' : '';
-      html += '<li><label><input type="checkbox" data-step="' + stepKey + '" ' + checked + '><span class="' + doneClass + '">' + esc(s) + '</span></label></li>';
-    });
-    html += '</ol><p class="capture sans"><b>What to capture:</b> ' + esc(part.capture) + '</p></div>';
-    return html;
-  }
-
-  function renderLabMain(){
-    var lab = LABS.filter(function(l){ return l.lab === currentLab; })[0] || LABS[0];
-    currentLab = lab.lab;
-    var ls = labState(lab.lab);
-    var main = document.getElementById('main');
-    var html = '';
+  // ================= SCENARIO TRACKS: LAB DETAIL =================
+  function renderLabLabDetail(main, l){
+    var ls = labState(l.lab);
     var fm = TRACK_META[currentTrack].fields;
-
-    html += '<div class="rules-banner sans">';
-    html += '<div><b>Practice namespace only.</b> Every hands-on build happens in your assigned ZZ_TRAIN_ role, ruleset, or workflow copy — never in a production object.</div>';
-    html += '<div><b>Planning card before transaction code.</b> ' + TRACK_META[currentTrack].banner + '</div>';
-    html += '</div>';
-
-    html += '<div class="lab-header"><p class="eyebrow">Track: ' + TRACK_META[currentTrack].name + ' &middot; Domain: ' + esc(lab.domain) + '</p><h2>Lab ' + lab.lab + ' — ' + esc(lab.book) + '</h2>';
-    html += '<p class="companion">Course Guide for this Lab is one click away in the sidebar above.</p></div>';
+    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += '<p class="book-card eyebrow">' + esc(l.domain) + '</p>';
+    html += '<h2 class="page-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</h2>';
+    html += '<div class="card book-card">';
+    html += '<div class="callout warn"><b>Hands-on &mdash; practice namespace</b>Build and save only in your assigned ZZ_TRAIN_ role/ruleset/workflow copy. Never edit a production role, ruleset, or workflow during this lab.</div>';
 
     var fields = [
-      ['1',fm[1],lab.ticket], ['2','Process',lab.process], ['3','Why It Matters',lab.impact],
-      ['4',fm[4],lab.objective], ['5',fm[5],lab.design],
-      ['6','Scope — What\'s Affected',lab.scope], ['7','Where to Look',lab.scope_source],
-      ['8','Confirm You Found Everything',lab.scope_check], ['9',fm[9],lab.fix_approach],
-      ['10',fm[10],lab.verification]
+      ['1', fm[1], l.ticket], ['2', 'Process', l.process], ['3', 'Why It Matters', l.impact],
+      ['4', fm[4], l.objective], ['5', fm[5], l.design],
+      ['6', 'Scope &mdash; What\'s Affected', l.scope], ['7', 'Where to Look', l.scope_source],
+      ['8', 'Confirm You Found Everything', l.scope_check], ['9', fm[9], l.fix_approach],
+      ['10', fm[10], l.verification]
     ];
     fields.forEach(function(f){
-      html += '<div class="field"><h3><span class="fn">' + f[0] + '</span> ' + f[1] + '</h3><p>' + esc(f[2]) + '</p></div>';
+      html += '<div class="field-row"><span class="fn">' + f[0] + '</span><h4>' + f[1] + '</h4><p>' + esc(f[2]) + '</p></div>';
     });
 
-    html += '<div class="field"><h3><span class="fn">11</span> Execution Steps</h3>';
-    html += '<div class="callout"><b class="sans">HANDS-ON — PRACTICE NAMESPACE</b>Build and save only in your assigned ZZ_TRAIN_ role/ruleset/workflow copy. Never edit a production role, ruleset, or workflow during this lab.</div>';
-    lab.exec.forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
+    html += '<div class="field-row"><span class="fn">11</span><h4>Execution Steps</h4>';
+    (l.exec || []).forEach(function(part, pi){ html += execPartHtml(part, pi, ls); });
     html += '</div>';
 
-    html += '<div class="field"><h3><span class="fn">12</span> Evaluation</h3><p>' + esc(lab.evaluation) + '</p></div>';
+    html += '<div class="field-row"><span class="fn">12</span><h4>Evaluation</h4><p>' + esc(l.evaluation) + '</p></div>';
 
-    html += '<div class="field"><h3><span class="fn">13</span> ' + fm[13] + '</h3>';
-    html += '<p class="sans" style="font-size:13px;color:var(--ink-soft);margin-bottom:8px;"><b>Your write-up</b> — write it in your own words before revealing the model.</p>';
-    html += '<textarea id="conclusion-input" placeholder="Type your write-up here...">' + esc(ls.conclusion) + '</textarea>';
+    html += '<div class="field-row"><span class="fn">13</span><h4>' + fm[13] + '</h4>';
+    html += '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:6px;">Your write-up &mdash; write it in your own words before revealing the model.</p>';
+    html += '<textarea class="student-textarea" id="conclusion-input" placeholder="Type your write-up here...">' + esc(ls.conclusion) + '</textarea>';
     html += '<button class="reveal-btn" id="conclusion-reveal-btn">Reveal model write-up</button>';
-    html += '<div class="model-box' + (ls.conclusionRevealed ? ' shown' : '') + '" id="conclusion-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.resolution) + '</p></div>';
+    html += '<div class="model-box' + (ls.conclusionRevealed?' shown':'') + '" id="conclusion-model"><div class="tag">Model</div><p>' + esc(l.resolution) + '</p></div>';
     html += '</div>';
 
-    html += '<div class="field"><h3><span class="fn">14</span> Stakeholder Pushback</h3>';
-    html += '<div class="challenge-quote">&ldquo;' + esc(lab.pushback) + '&rdquo;</div>';
-    html += '<textarea id="challenge-input" placeholder="Type your response here...">' + esc(ls.challengeResponse) + '</textarea>';
+    html += '<div class="field-row"><span class="fn">14</span><h4>Stakeholder Pushback</h4>';
+    html += '<div class="quote-box">&ldquo;' + esc(l.pushback) + '&rdquo;</div>';
+    html += '<textarea class="student-textarea" id="challenge-input" placeholder="Type your response here...">' + esc(ls.challengeResponse) + '</textarea>';
     html += '<button class="reveal-btn" id="challenge-reveal-btn">Reveal model response</button>';
-    html += '<div class="model-box' + (ls.challengeRevealed ? ' shown' : '') + '" id="challenge-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.pushback_model) + '</p></div>';
+    html += '<div class="model-box' + (ls.challengeRevealed?' shown':'') + '" id="challenge-model"><div class="tag">Model</div><p>' + esc(l.pushback_model) + '</p></div>';
     html += '</div>';
 
-    html += '<div class="gate-section"><details class="gate-toggle" ' + (ls.gateOpened ? 'open' : '') + ' id="gate-details">';
-    html += '<summary class="sans">Field 15 — Facilitator-Only Escalation Conversation (click to expand once your independent run is complete)</summary>';
-    html += '<div class="warn sans">Facilitators: ask this after the trainee has completed the lab independently.</div>';
-    html += '<div class="gq">&ldquo;' + esc(lab.escalation) + '&rdquo;</div>';
-    html += '<textarea id="gate-input" placeholder="Trainee\'s spoken answer, noted here...">' + esc(ls.gateResponse) + '</textarea>';
-    html += '<button class="gate-btn" id="gate-reveal-btn">Reveal model answer</button>';
-    html += '<div class="model-box' + (ls.gateRevealed ? ' shown' : '') + '" id="gate-model"><div class="tag">MODEL ANSWER</div><p>' + esc(lab.escalation_model) + '</p></div>';
-    html += '</details></div>';
+    html += '<details class="gate-toggle" ' + (ls.gateOpened?'open':'') + ' id="gate-details">';
+    html += '<summary>Field 15 &mdash; Facilitator-Only Escalation Conversation (click to expand once your independent run is complete)</summary>';
+    html += '<div class="gate-body">';
+    html += '<p style="font-size:0.8rem;color:var(--muted);margin:0 0 8px;">Facilitators: ask this after the trainee has completed the lab independently.</p>';
+    html += '<div class="quote-box">&ldquo;' + esc(l.escalation) + '&rdquo;</div>';
+    html += '<textarea class="student-textarea" id="gate-input" placeholder="Trainee\'s spoken answer, noted here...">' + esc(ls.gateResponse) + '</textarea>';
+    html += '<button class="reveal-btn" id="gate-reveal-btn">Reveal model answer</button>';
+    html += '<div class="model-box' + (ls.gateRevealed?' shown':'') + '" id="gate-model"><div class="tag">Facilitator Model</div><p>' + esc(l.escalation_model) + '</p></div>';
+    html += '</div></details>';
 
-    html += '<div class="complete-row">';
-    html += '<span class="status' + (ls.complete ? ' done' : '') + ' sans">' + (ls.complete ? '✓ Lab marked complete' : 'Not yet marked complete') + '</span>';
-    html += '<button class="action-btn" id="complete-btn">' + (ls.complete ? 'Mark as Not Complete' : 'Mark Lab Complete') + '</button>';
+    html += '<div class="mark-complete-row"><span class="status-note ' + (ls.complete?'done':'') + '">' + (ls.complete ? '\u2713 Lab marked complete' : 'Not yet marked complete') + '</span>';
+    html += '<button class="btn ' + (ls.complete?'secondary':'') + '" id="complete-btn">' + (ls.complete ? 'Mark as Not Complete' : 'Mark Lab Complete') + '</button></div>';
     html += '</div>';
-
     main.innerHTML = html;
-    wireLabInteractions(lab, ls);
+    wireLabInteractions(l, ls);
   }
 
-  function wireLabInteractions(lab, ls){
+  function wireLabInteractions(l, ls){
     document.querySelectorAll('input[type=checkbox][data-step]').forEach(function(cb){
       cb.addEventListener('change', function(){
         ls.steps[cb.dataset.step] = cb.checked;
@@ -845,7 +731,7 @@
     });
     document.getElementById('complete-btn').addEventListener('click', function(){
       ls.complete = !ls.complete; saveState(state);
-      pushLabCompletion(lab.lab, ls.complete);
+      pushLabCompletion(l.lab, ls.complete);
       render();
     });
   }
@@ -853,8 +739,6 @@
   // ---------- BOOTSTRAP ----------
   grc.auth.onAuthStateChange(function(event){
     if(event === 'PASSWORD_RECOVERY'){
-      document.getElementById('wrap-auth').classList.remove('hidden');
-      document.getElementById('wrap-app').classList.add('hidden');
       showView('reset');
     }
   });
@@ -874,7 +758,6 @@
       recoveryClient.auth.onAuthStateChange(function(event, session){
         if(event === 'PASSWORD_RECOVERY' || (session && location.hash.indexOf('type=recovery') !== -1)){
           grc = recoveryClient;
-          document.getElementById('wrap-auth').classList.remove('hidden');
           showView('reset');
         }
       });
