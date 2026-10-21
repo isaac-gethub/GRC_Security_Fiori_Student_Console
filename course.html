@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP GRC Security &amp; Fiori Labs — TIB Systems</title>
+<meta name="description" content="12 Foundations modules and 44 scenario labs in SAP GRC Access Control, SAP Security and Fiori — built from current SAP GRC Security consultant job postings. TIB Systems.">
+<style>
+  :root{
+    --navy:#1F3864; --navy-dark:#152747; --blue:#2E5395; --accent:#3E7CB1; --gold:#B8860B; --gold-light:#D9A93A;
+    --green:#1E7145; --bg:#F4F6FA; --card:#FFFFFF; --border:#E1E6EF; --text:#1B2430; --muted:#5A6472;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;}
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style",Palatino,serif;color:var(--navy);line-height:1.25;margin:0 0 12px;}
+  a{color:var(--blue);}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px;}
+
+  /* nav */
+  .nav{background:var(--navy-dark);color:#fff;position:sticky;top:0;z-index:20;border-bottom:3px solid var(--gold);}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;}
+  .brand{color:#fff;text-decoration:none;font-weight:700;font-size:15px;}
+  .brand span{display:block;font-weight:400;font-size:11.5px;color:#C9D4E8;}
+  .nav-links{display:none;gap:20px;font-size:14px;}
+  .nav-links a{color:#E3E9F4;text-decoration:none;}
+  .nav-links a:hover{color:#fff;}
+  .btn{display:inline-block;padding:11px 20px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none;text-align:center;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-gold:hover{background:#9A7009;}
+  .btn-ghost{border:1.5px solid rgba(255,255,255,.55);color:#fff;}
+  .btn-ghost:hover{border-color:#fff;}
+  .btn-sm{padding:8px 14px;font-size:13.5px;}
+
+  /* hero */
+  .hero{background:linear-gradient(160deg,var(--navy-dark),var(--navy) 60%,var(--blue));color:#fff;padding:40px 0 36px;}
+  .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-light);margin-bottom:12px;}
+  .hero h1{color:#fff;font-size:29px;max-width:22ch;}
+  .hero .lede{color:#DCE4F1;font-size:16.5px;max-width:62ch;margin:0 0 22px;}
+  .cta-row{display:flex;flex-direction:column;gap:10px;}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden;margin-top:28px;}
+  .stat{background:rgba(21,39,71,.55);padding:14px 14px;}
+  .stat b{display:block;font-family:Georgia,serif;font-size:24px;color:var(--gold-light);}
+  .stat span{font-size:13px;color:#C9D4E8;}
+  .stat:last-child{grid-column:span 2;}
+
+  /* sections */
+  section{padding:44px 0;}
+  section.alt{background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;display:block;}
+  h2{font-size:24px;}
+  .sub{color:var(--muted);max-width:70ch;margin:0 0 24px;}
+
+  /* demand table */
+  .demand{display:grid;gap:12px;}
+  .drow{background:#fff;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;}
+  section.alt .drow{background:var(--bg);}
+  .drow h3{font-family:inherit;font-size:15.5px;margin:0 0 4px;color:var(--navy);}
+  .drow p{margin:0;font-size:14.5px;color:var(--muted);}
+  .drow .where{margin-top:6px;font-size:13.5px;color:var(--text);}
+  .drow .where b{color:var(--green);}
+  .meter{margin-top:22px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .bar{height:14px;background:#E8ECF3;border-radius:8px;overflow:hidden;margin:10px 0 8px;}
+  .bar i{display:block;height:100%;width:89%;background:linear-gradient(90deg,var(--accent),var(--green));}
+  .meter small{color:var(--muted);font-size:13px;}
+
+  /* roles */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .pill{background:#EAF0F8;color:var(--navy);border:1px solid #D3DEEE;border-radius:20px;padding:7px 13px;font-size:13.5px;font-weight:600;}
+  .note{font-size:13.5px;color:var(--muted);margin-top:14px;}
+
+  /* foundations */
+  .flist,.labs{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+  .flist li,.labs li{background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 13px;display:flex;gap:12px;align-items:flex-start;}
+  section.alt .flist li{background:var(--bg);}
+  .fn,.ln{flex-shrink:0;font-weight:800;font-size:13px;color:#fff;background:var(--navy);border-radius:6px;padding:3px 7px;min-width:34px;text-align:center;}
+  .ln{background:var(--accent);}
+  .flist b,.labs b{display:block;font-size:14.5px;}
+  .fx,.ld{display:block;font-size:12.5px;color:var(--muted);}
+  .tag{flex-shrink:0;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:4px;padding:2px 6px;margin-left:auto;}
+  .tag+.tag{margin-left:4px;}
+  .tag.new{background:#E6F2EA;color:var(--green);}
+  .tag.sim{background:#FBF1DC;color:#8A6408;}
+
+  /* tracks */
+  .track{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+  .track summary{cursor:pointer;list-style:none;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;background:#F8FAFD;}
+  .track summary::-webkit-details-marker{display:none;}
+  .track summary::after{content:"+";margin-left:auto;font-weight:800;color:var(--accent);font-size:18px;}
+  .track[open] summary::after{content:"–";}
+  .tl{font-size:12px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;}
+  .tn{font-family:Georgia,serif;font-weight:700;color:var(--navy);font-size:17px;}
+  .tc{font-size:13px;color:var(--muted);}
+  .tdesc{margin:0;padding:12px 16px 4px;color:var(--muted);font-size:14.5px;}
+  .labs{padding:10px 16px 16px;}
+  .labs li{background:var(--bg);}
+
+  /* flow */
+  .flow{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s;}
+  .flow li{counter-increment:s;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px 12px 52px;position:relative;font-size:14.5px;}
+  section.alt .flow li{background:var(--bg);}
+  .flow li::before{content:counter(s);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .flow b{color:var(--navy);}
+
+  /* honesty */
+  .honest{background:#fff;border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:8px;padding:16px 18px;}
+  .honest ul{margin:8px 0 0;padding-left:20px;}
+  .honest li{margin-bottom:6px;font-size:14.5px;}
+
+  /* faq */
+  details.q{background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+  section.alt details.q{background:var(--bg);}
+  details.q summary{cursor:pointer;padding:13px 16px;font-weight:700;color:var(--navy);}
+  details.q p{margin:0;padding:0 16px 14px;color:var(--muted);font-size:14.5px;}
+
+  /* final cta */
+  .final{background:var(--navy-dark);color:#fff;text-align:center;padding:44px 0;}
+  .final h2{color:#fff;}
+  .final p{color:#C9D4E8;max-width:56ch;margin:0 auto 20px;}
+  .final .cta-row{align-items:center;}
+  footer{background:#0F1C33;color:#9DABC2;font-size:12.5px;text-align:center;padding:18px 16px;}
+  footer a{color:#C9D4E8;}
+
+  /* ~600px phone → tablet */
+  @media (min-width:600px){
+    .wrap{padding:0 24px;}
+    .hero{padding:52px 0 44px;}
+    .hero h1{font-size:36px;}
+    .cta-row{flex-direction:row;flex-wrap:wrap;}
+    .stats{grid-template-columns:repeat(3,1fr);}
+    .demand{grid-template-columns:1fr 1fr;}
+    .flist{grid-template-columns:1fr 1fr;}
+    .final .cta-row{justify-content:center;}
+  }
+  /* ~880px tablet → desktop */
+  @media (min-width:880px){
+    .nav-links{display:flex;}
+    .hero h1{font-size:42px;}
+    .stats{grid-template-columns:repeat(5,1fr);}
+    .stat:last-child{grid-column:auto;}
+    .hero h1{max-width:26ch;}
+    h2{font-size:28px;}
+    section{padding:56px 0;}
+    .labs{grid-template-columns:1fr 1fr;}
+    .flow{grid-template-columns:repeat(2,1fr);}
+    .two{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:start;}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="course.html">TIB Systems<span>SAP GRC Security &amp; Fiori Labs</span></a>
+    <div class="nav-links"><a href="#demand">Skills demand</a><a href="#inside">What's inside</a><a href="#labs">How labs work</a><a href="#faq">FAQ</a></div>
+    <a class="btn btn-gold btn-sm" href="index.html">Sign in</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">SAP GRC Access Control · SAP Security · Fiori</span>
+    <h1>Practise the work SAP GRC Security consultants are hired to do.</h1>
+    <p class="lede">12 Foundations modules and 44 scenario labs — role design, PFCG builds, SoD rulesets, MSMP workflows, Firefighter, Fiori and cloud identity — across the whole project lifecycle, from blueprint to hypercare. Built against current SAP GRC Security consultant job postings, not a generic syllabus.</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="#inside">See all 44 labs</a>
+      <a class="btn btn-ghost" href="#demand">How it maps to the job market</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>12</b><span>Foundations modules</span></div>
+      <div class="stat"><b>44</b><span>Scenario labs</span></div>
+      <div class="stat"><b>4</b><span>Project-lifecycle tracks</span></div>
+      <div class="stat"><b>18</b><span>Live job postings analysed</span></div>
+      <div class="stat"><b>~90%</b><span>Of the composite job description covered</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="demand">
+  <div class="wrap">
+    <span class="kicker">Built on skills demand</span>
+    <h2>We read the job postings first — then built the labs to match.</h2>
+    <p class="sub">In October 2026 we consolidated 18 open SAP Security and GRC consultant postings from Dice and Indeed — consultancies, manufacturers, retailers, government contractors and Big 4 — into one composite job description. Every area below comes from those postings, with where you practise it in the course.</p>
+    <div class="demand">
+      <div class="drow"><h3>Role design and build</h3><p>PFCG single, composite and derived roles; org-level derivation; SU24 and SU25; naming standards; transports.</p><div class="where"><b>Practise in:</b> Foundations 2–3 · Labs A1, B1, B6, C1, D3, D6</div></div>
+      <div class="drow"><h3>User administration and troubleshooting</h3><p>SU01 and SU10; diagnosing "no authorization" with SU53, STAUTHTRACE and SUIM; mass role loads.</p><div class="where"><b>Practise in:</b> Foundations 3, 8, 9 · Labs B11, C1, C5</div></div>
+      <div class="drow"><h3>GRC Access Control</h3><p>Access Risk Analysis and rulesets, Access Request Management with MSMP/BRF+, Firefighter, Business Role Management, User Access Review, mitigating controls, connectors.</p><div class="where"><b>Practise in:</b> Foundations 4–6 · Labs A2–A4, A7–A10, B2–B3, B5, B7–B9, C3, C7, C9–C10, D1–D2, D4–D5, D7</div></div>
+      <div class="drow"><h3>Fiori and front-end security</h3><p>Catalogs, spaces, pages and tiles; OData services, ICF nodes and S_SERVICE; front-end to back-end alignment.</p><div class="where"><b>Practise in:</b> Foundations 7, 10 · Labs A5, B4, B10, D8</div></div>
+      <div class="drow"><h3>Cloud identity</h3><p>BTP role collections, SAP Cloud Identity Services (IAS, IPS) and Identity Access Governance (IAG) — the fastest-growing requirement in the postings.</p><div class="where"><b>Practise in:</b> Foundation 11 · Labs A11, C11</div></div>
+      <div class="drow"><h3>Privileged and technical access</h3><p>SAP*, DDIC and default users; user types and S_RFC; the Security Audit Log; HANA database users.</p><div class="where"><b>Practise in:</b> Foundation 12 · Lab B12</div></div>
+      <div class="drow"><h3>Projects, SOX and audit</h3><p>The security workstream from blueprint through cutover, go-live and hypercare; SOX access evidence for internal and external auditors.</p><div class="where"><b>Practise in:</b> all of Track C · Labs A12, C12</div></div>
+      <div class="drow"><h3>Judgement and communication</h3><p>Explaining a control failure to an auditor, a developer and a business owner — and holding a correct position under pressure.</p><div class="where"><b>Practise in:</b> every lab ends with a pushback and an escalation question, with model answers</div></div>
+    </div>
+    <div class="meter">
+      <b>Coverage of the composite job description: about 88–90%</b>
+      <div class="bar"><i></i></div>
+      <small>Labs on Business Role Management, User Access Review and cloud identity run as design and simulation exercises, which is why we don't claim more. Assessed against postings live in October 2026; we re-check as the market moves.</small>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="roles">
+  <div class="wrap two">
+    <div>
+      <span class="kicker">Market relevance</span>
+      <h2>The roles this prepares you for</h2>
+      <p class="sub">These are the job titles in the postings we analysed. Course work is practice, not employment experience — use it to perform confidently in interviews and in your first engagements.</p>
+      <div class="pills">
+        <span class="pill">SAP Security Consultant</span>
+        <span class="pill">SAP GRC Access Control Consultant / Analyst</span>
+        <span class="pill">SAP Security Administrator</span>
+        <span class="pill">S/4HANA &amp; Fiori Security Analyst</span>
+        <span class="pill">SAP GRC / IAG Identity Analyst</span>
+        <span class="pill">SAP Security &amp; GRC Support Analyst</span>
+      </div>
+    </div>
+    <div>
+      <div class="honest">
+        <b>What the postings paid (October 2026)</b>
+        <ul>
+          <li>Permanent roles: roughly <b>$75,000–$207,000</b> a year, depending on seniority.</li>
+          <li>Contract roles: roughly <b>$45–$88 an hour</b>.</li>
+          <li>Most asked for 4+ years' experience — which is why the labs are built around real project situations rather than screen tours.</li>
+        </ul>
+        <p class="note">Ranges are taken from the advertised pay in the postings analysed; they are not a promise of salary or employment.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <span class="kicker">What's inside</span>
+    <h2>12 Foundations modules</h2>
+    <p class="sub">Short, step-by-step modules that teach the screens and mechanics every lab assumes — each with a walkthrough, what to capture, a practice exercise, common mistakes and a quick reference.</p>
+    <ul class="flist">
+<li><span class="fn">01</span><span><b>Finding Your Way Around: SAP GUI, Fiori, and SPRO</b><span class="fx">SAP Easy Access / Fiori Launchpad / SPRO</span></span></li>
+<li><span class="fn">02</span><span><b>Building Roles in PFCG: Single, Composite, and Derived</b><span class="fx">PFCG</span></span></li>
+<li><span class="fn">03</span><span><b>Authorization Defaults and User Master Basics: SU24 and SU01</b><span class="fx">SU24 / SU01</span></span></li>
+<li><span class="fn">04</span><span><b>Finding Your Way Around GRC Access Control: GRAC_SPM and Configuration</b><span class="fx">GRAC_SPM / SPRO (GRC AC nodes)</span></span></li>
+<li><span class="fn">05</span><span><b>Reading a Workflow: MSMP and BRF+ Fundamentals</b><span class="fx">SPRO (MSMP configuration) / BRFPLUS</span></span></li>
+<li><span class="fn">06</span><span><b>Firefighter Mechanics: Assigning, Using, and Reviewing</b><span class="fx">GRAC_SPM (EAM) / GRAC_EAM_FIREFIGHTER</span></span></li>
+<li><span class="fn">07</span><span><b>Building the Launchpad: Catalogs, Spaces, and Tiles</b><span class="fx">Fiori Launchpad Designer (/UI2/FLPD_CUST) / Manage Launchpad Spaces</span></span></li>
+<li><span class="fn">08</span><span><b>Mass Role Assignment Basics: LSMW</b><span class="fx">LSMW</span></span></li>
+<li><span class="fn">09</span><span><b>Troubleshooting Authorization Failures: SU53, STAUTHTRACE, SUIM, and SU10</b><span class="fx">SU53 / STAUTHTRACE / SUIM / SU10</span></span><span class="tag new">New</span></li>
+<li><span class="fn">10</span><span><b>Fiori Front-End to Back-End: OData Services, ICF Nodes, and S_SERVICE</b><span class="fx">Fiori Apps Reference Library / /IWFND/MAINT_SERVICE / SICF / PFCG (S_SERVICE) / /IWFND/ERROR_LOG</span></span><span class="tag new">New</span></li>
+<li><span class="fn">11</span><span><b>Cloud Identity and BTP: Role Collections, IAS, IPS, and IAG</b><span class="fx">SAP BTP Cockpit / SAP Cloud Identity Services (IAS, IPS) / SAP Cloud Identity Access Governance (IAG)</span></span><span class="tag new">New</span></li>
+<li><span class="fn">12</span><span><b>Privileged and Technical Access: Default Users, User Types, the Security Audit Log, and HANA Users</b><span class="fx">RSUSR003 / SUIM / SU01 (user types) / RSAU_CONFIG (SM19) / RSAU_READ_LOG (SM20) / SAP HANA Cockpit</span></span><span class="tag new">New</span></li>
+    </ul>
+
+    <h2 style="margin-top:40px;" id="tracks">44 labs in four project tracks</h2>
+    <p class="sub">Each track follows a real SAP security engagement. Labs marked <span class="tag sim" style="margin:0">Simulation</span> are design exercises that don't need extra system configuration; <span class="tag new" style="margin:0">New</span> labs were added in October 2026 to close gaps found in the job postings.</p>
+
+    <details class="track" open>
+      <summary><span class="tl">Track A</span><span class="tn">Design &amp; Blueprint</span><span class="tc">12 labs</span></summary>
+      <p class="tdesc">Turn requirements into role, ruleset, workflow and governance designs a build team can follow.</p>
+      <ul class="labs"><li><span class="ln">A1</span><span class="lt"><b>The Matrix Nobody Agreed On</b><span class="ld">Role Design &amp; Naming Convention Standards</span></span></li>
+<li><span class="ln">A2</span><span class="lt"><b>The Rule That Didn&#x27;t Exist Yet</b><span class="ld">SoD Ruleset Design</span></span></li>
+<li><span class="ln">A3</span><span class="lt"><b>Nobody Owns the Fire Extinguisher</b><span class="ld">Emergency Access Management (Firefighter) Design</span></span></li>
+<li><span class="ln">A4</span><span class="lt"><b>The Approval Chain With No Chain</b><span class="ld">MSMP Workflow Design</span></span></li>
+<li><span class="ln">A5</span><span class="lt"><b>The Launchpad With No Floor Plan</b><span class="ld">Fiori Launchpad Space &amp; Catalog Design</span></span></li>
+<li><span class="ln">A6</span><span class="lt"><b>The Same Question, Answered Five Different Ways</b><span class="ld">SU24 Authorization Default Governance Design</span></span></li>
+<li><span class="ln">A7</span><span class="lt"><b>The Form That Asked the Wrong Questions</b><span class="ld">Access Request Form Design</span></span></li>
+<li><span class="ln">A8</span><span class="lt"><b>One Risk Library, Three Different Answers</b><span class="ld">SoD Risk Library Scoping Design</span></span></li>
+<li><span class="ln">A9</span><span class="lt"><b>Forty Roles and No Owners</b><span class="ld">Business Role Management (BRM) Governance Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">A10</span><span class="lt"><b>The Review Everyone Approved</b><span class="ld">User Access Review (UAR) Campaign Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">A11</span><span class="lt"><b>The Cloud App Nobody Governs</b><span class="ld">BTP / Cloud Identity &amp; IAG Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">A12</span><span class="lt"><b>The Request List That Arrived on Monday</b><span class="ld">SOX Access-Evidence Readiness Design</span></span><span class="tag new">New</span></li></ul>
+    </details>
+
+    <details class="track">
+      <summary><span class="tl">Track B</span><span class="tn">Configuration &amp; Build</span><span class="tc">12 labs</span></summary>
+      <p class="tdesc">Build it in the system — roles, rules, workflows, Fiori content — and prove it works.</p>
+      <ul class="labs"><li><span class="ln">B1</span><span class="lt"><b>The Boundary the Matrix Didn&#x27;t Explain</b><span class="ld">PFCG Role Build from Role Matrix</span></span></li>
+<li><span class="ln">B2</span><span class="lt"><b>The App That Wasn&#x27;t There Anymore</b><span class="ld">SoD Ruleset Technical Build</span></span></li>
+<li><span class="ln">B3</span><span class="lt"><b>The Stage With No Way Out</b><span class="ld">MSMP / BRF+ Workflow Technical Build</span></span></li>
+<li><span class="ln">B4</span><span class="lt"><b>The App That Wasn&#x27;t Supposed to Exist Anymore</b><span class="ld">Fiori Launchpad Technical Build</span></span></li>
+<li><span class="ln">B5</span><span class="lt"><b>The Transaction the Analysis Got Wrong</b><span class="ld">Emergency Access Management (Firefighter) Technical Build</span></span></li>
+<li><span class="ln">B6</span><span class="lt"><b>Two Teams, One Standard, Different Tools</b><span class="ld">SU24 Authorization Default Governance — Technical Build</span></span></li>
+<li><span class="ln">B7</span><span class="lt"><b>The Rule the Tool Couldn&#x27;t Quite Follow</b><span class="ld">Access Request Form Technical Build</span></span></li>
+<li><span class="ln">B8</span><span class="lt"><b>The Draft That Wouldn&#x27;t Retire Quietly</b><span class="ld">SoD Risk Library Technical Build</span></span></li>
+<li><span class="ln">B9</span><span class="lt"><b>The Master Role That Wouldn&#x27;t Derive</b><span class="ld">BRM Technical Build — Master and Derived Roles</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">B10</span><span class="lt"><b>The Tile That Opened Nothing</b><span class="ld">Fiori OData Service Enablement and S_SERVICE Build</span></span><span class="tag new">New</span></li>
+<li><span class="ln">B11</span><span class="lt"><b>Can&#x27;t Post, Won&#x27;t Wait</b><span class="ld">Authorization Troubleshooting Ticket — SU53 / STAUTHTRACE / SUIM</span></span><span class="tag new">New</span></li>
+<li><span class="ln">B12</span><span class="lt"><b>The Log Nobody Was Writing</b><span class="ld">Privileged-ID Review and Security Audit Log Filter Build</span></span><span class="tag new">New</span></li></ul>
+    </details>
+
+    <details class="track">
+      <summary><span class="tl">Track C</span><span class="tn">Go-Live &amp; Cutover</span><span class="tc">12 labs</span></summary>
+      <p class="tdesc">Mass loads, go/no-go calls, hypercare, first reviews and auditor requests under real deadlines.</p>
+      <ul class="labs"><li><span class="ln">C1</span><span class="lt"><b>The Load That Almost Went Out Wrong</b><span class="ld">Mass Role Assignment (LSMW) Cutover Execution</span></span></li>
+<li><span class="ln">C2</span><span class="lt"><b>The War Room at 2 AM</b><span class="ld">Go-Live Hypercare Ticket Triage</span></span></li>
+<li><span class="ln">C3</span><span class="lt"><b>The Firefighter Nobody Had Time to Provision</b><span class="ld">Emergency Access During the Blackout Window</span></span></li>
+<li><span class="ln">C4</span><span class="lt"><b>The Go/No-Go Call</b><span class="ld">Security Readiness Sign-off Before Go-Live</span></span></li>
+<li><span class="ln">C5</span><span class="lt"><b>The Access That Didn&#x27;t Follow the User</b><span class="ld">Day-1 Post-Cutover Access Verification</span></span></li>
+<li><span class="ln">C6</span><span class="lt"><b>The Rehearsal That Skipped a Step</b><span class="ld">Cutover Rehearsal (Mock Go-Live) Defect</span></span></li>
+<li><span class="ln">C7</span><span class="lt"><b>Everyone Wants to Be a Firefighter This Weekend</b><span class="ld">Hypercare Access Escalation Management</span></span></li>
+<li><span class="ln">C8</span><span class="lt"><b>The Last Ticket Before Stabilization</b><span class="ld">Hypercare Exit / Stabilization Sign-off</span></span></li>
+<li><span class="ln">C9</span><span class="lt"><b>The First Review After Go-Live</b><span class="ld">First Post-Go-Live UAR Campaign</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">C10</span><span class="lt"><b>Approved, but Not There</b><span class="ld">GRC Connector and Provisioning Failure at Go-Live</span></span><span class="tag new">New</span></li>
+<li><span class="ln">C11</span><span class="lt"><b>Day One, No Login</b><span class="ld">Day-1 Cloud Provisioning Failure (IPS / IAS)</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
+<li><span class="ln">C12</span><span class="lt"><b>Twelve Requests by Friday</b><span class="ld">External Auditor Evidence Request in Hypercare</span></span><span class="tag new">New</span></li></ul>
+    </details>
+
+    <details class="track">
+      <summary><span class="tl">Track D</span><span class="tn">Post-Go-Live Support</span><span class="tc">8 labs</span></summary>
+      <p class="tdesc">Diagnose and fix the access problems that surface once the business is live.</p>
+      <ul class="labs"><li><span class="ln">D1</span><span class="lt"><b>The Ruleset That Went Quiet</b><span class="ld">Access Risk Analysis / SoD Ruleset Design</span></span></li>
+<li><span class="ln">D2</span><span class="lt"><b>The Shared Login</b><span class="ld">Emergency Access Management (Firefighter)</span></span></li>
+<li><span class="ln">D3</span><span class="lt"><b>The Split That Closed a Door</b><span class="ld">Business Role Design &amp; PFCG</span></span></li>
+<li><span class="ln">D4</span><span class="lt"><b>The Approval Nobody Sent</b><span class="ld">MSMP Workflow (GRC Access Control)</span></span></li>
+<li><span class="ln">D5</span><span class="lt"><b>Copied From Someone Else</b><span class="ld">Access Control Provisioning</span></span></li>
+<li><span class="ln">D6</span><span class="lt"><b>The Proposal Nobody Updated</b><span class="ld">User &amp; Role Administration / SU24 Authorization Defaults</span></span></li>
+<li><span class="ln">D7</span><span class="lt"><b>Resolved on the Report</b><span class="ld">SoD Remediation &amp; Mitigating Controls</span></span></li>
+<li><span class="ln">D8</span><span class="lt"><b>The Tile That Opened Everything</b><span class="ld">Fiori Catalog &amp; Space Security</span></span></li></ul>
+    </details>
+  </div>
+</section>
+
+<section class="alt" id="labs">
+  <div class="wrap">
+    <span class="kicker">How every lab works</span>
+    <h2>Built like a real ticket — judged like a real reviewer would.</h2>
+    <p class="sub">Every lab follows the same structure, so you learn a method you can repeat on any client system.</p>
+    <ol class="flow">
+      <li><b>The ticket.</b> A realistic request or incident, with the business process behind it and why it matters.</li>
+      <li><b>Objective and design.</b> What a good outcome looks like, and the approach a senior consultant would take.</li>
+      <li><b>Scope.</b> Exactly what is in scope, where the data comes from, and the check that stops you scoping it wrong.</li>
+      <li><b>Execution.</b> A three- or four-part walkthrough, with what to capture as evidence at every step.</li>
+      <li><b>Verification.</b> How you prove the fix works — not just that it looks finished.</li>
+      <li><b>Pushback and escalation.</b> The challenge a manager, auditor or business owner will raise, with a model answer to compare against yours.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="honest">
+      <b>What we do and don't claim</b>
+      <ul>
+        <li>Lab steps are written for a live S/4HANA and GRC training system, using the ZZ_TRAIN_ practice namespace — never production objects.</li>
+        <li>Business Role Management, User Access Review and cloud identity (BTP, IAS, IPS, IAG) labs run as design and simulation exercises.</li>
+        <li>Completing the labs builds practical skill and interview readiness; it is not the same as production project experience, and we don't describe it that way.</li>
+        <li>TIB Systems is an independent training provider. This course is not endorsed by SAP SE.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="faq">
+  <div class="wrap">
+    <span class="kicker">Questions</span>
+    <h2>Before you enrol</h2>
+    <details class="q"><summary>Who is this for?</summary><p>Junior and mid-level SAP consultants, auditors and administrators moving into SAP Security and GRC, and anyone who has the theory but not the hands-on judgement employers test for.</p></details>
+    <details class="q"><summary>Do I need to know how to code?</summary><p>No. You need to understand that SAP access is controlled through configuration and roles that can be inspected and changed — the Foundations modules teach exactly that.</p></details>
+    <details class="q"><summary>Where should I start?</summary><p>Work through Foundations 1–8 first, then the tracks in order A → B → C → D. Foundations 9–12 can be taken any time after Module 3.</p></details>
+    <details class="q"><summary>How is this different from a video course?</summary><p>Every lab is a scenario you work through and write up, ending with the pushback and escalation questions real stakeholders ask — so you practise the reasoning, not just the clicks.</p></details>
+    <details class="q"><summary>I'm already enrolled — where do I go?</summary><p>Sign in with the email you enrolled with. If your enrolment isn't showing after a day, contact <a href="mailto:support@tib-systems.com">support@tib-systems.com</a>.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Train on the work, not just the screens.</h2>
+    <p>12 Foundations modules, 44 labs and four project tracks — mapped to what SAP GRC Security employers are asking for right now.</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="mailto:support@tib-systems.com?subject=SAP%20GRC%20Security%20%26%20Fiori%20Labs%20%E2%80%94%20enrolment">Ask about enrolment</a>
+      <a class="btn btn-ghost" href="index.html">Already enrolled? Sign in</a>
+    </div>
+  </div>
+</section>
+
+<footer>TIB Systems LLC — SAP Security, GRC &amp; Controls training · <a href="index.html">Student sign in</a></footer>
+</body>
+</html>
