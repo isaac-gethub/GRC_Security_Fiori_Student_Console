@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enrol — SAP GRC Security &amp; Fiori Labs — TIB Systems</title>
+<meta name="description" content="Choose a level, start date and class time for SAP GRC Security &amp; Fiori Labs — Intermediate $950, Advanced $850, both $1,650. 5 seats per class time.">
+<style>
+  :root{
+    --navy:#1F3864; --navy-dark:#152747; --blue:#2E5395; --accent:#3E7CB1; --gold:#B8860B; --gold-light:#D9A93A;
+    --green:#1E7145; --red:#A24B3F; --bg:#F4F6FA; --card:#FFFFFF; --border:#E1E6EF; --text:#1B2430; --muted:#5A6472;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg);line-height:1.55;}
+  a{color:var(--accent);}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px;}
+  .nav{background:var(--navy-dark);}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;}
+  .brand{color:#fff;font-weight:800;text-decoration:none;font-size:15px;}
+  .brand span{display:block;font-weight:500;font-size:12px;color:#C9D4E8;}
+  .btn{display:inline-block;text-decoration:none;font-weight:700;border-radius:6px;padding:11px 16px;font-size:14.5px;border:none;cursor:pointer;font-family:inherit;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-gold:hover{background:#9A7009;}
+  .btn-sm{padding:7px 12px;font-size:13px;}
+  .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.5);}
+  header.top{background:var(--navy);color:#fff;padding:30px 0 26px;}
+  header.top h1{font-family:Georgia,serif;margin:0 0 8px;font-size:26px;}
+  header.top p{margin:0;color:#C9D4E8;font-size:15px;max-width:64ch;}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 6px;}
+  .tab{background:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-weight:700;font-size:13.5px;color:var(--navy);cursor:pointer;font-family:inherit;}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .note{font-size:14px;color:var(--muted);margin:4px 0 14px;}
+  .strip{background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:grid;gap:6px;font-size:14px;margin-bottom:14px;}
+  .strip b{color:var(--navy);}
+  .cls{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .cls-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;align-items:baseline;}
+  .cls-head h2{margin:0;font-size:17px;color:var(--navy);}
+  .cls-time{font-weight:700;color:var(--muted);font-size:14px;}
+  .seats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 4px;}
+  .seat{border-radius:6px;padding:8px 4px;text-align:center;font-size:12px;font-weight:700;border:1px solid var(--border);}
+  .seat.open{background:#E6F2EA;color:var(--green);cursor:pointer;}
+  .seat.open.picked{background:var(--green);color:#fff;}
+  .seat.closed{background:#F3E6E3;color:var(--red);}
+  form.enrol{display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;}
+  form.enrol.active{display:block;}
+  form.enrol label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin:8px 0 4px;}
+  form.enrol input{width:100%;padding:10px 12px;font-size:15px;border:1px solid var(--border);border-radius:6px;font-family:inherit;}
+  form.enrol .btn{width:100%;margin-top:12px;}
+  .msg{display:none;margin-top:10px;padding:10px 12px;border-radius:6px;font-size:14px;}
+  .msg.show{display:block;}
+  .msg.ok{background:#E6F2EA;color:var(--green);}
+  .msg.err{background:#F3E6E3;color:var(--red);}
+  footer{background:#0F1C33;color:#9DABC2;font-size:12.5px;text-align:center;padding:18px 16px;margin-top:30px;}
+  footer a{color:#C9D4E8;}
+  /* ~600px phone → tablet */
+  @media (min-width:600px){
+    .wrap{padding:0 24px;}
+    header.top h1{font-size:32px;}
+    .strip{grid-template-columns:repeat(3,1fr);}
+    form.enrol .btn{width:auto;}
+  }
+  /* ~880px tablet → desktop */
+  @media (min-width:880px){
+    header.top{padding:40px 0 34px;}
+    .seats{grid-template-columns:repeat(5,110px);}
+  }
+</style>
+</head>
+<body>
+<nav class="nav"><div class="wrap">
+  <a class="brand" href="course.html">TIB Systems<span>SAP GRC Security &amp; Fiori Labs</span></a>
+  <a class="btn btn-ghost btn-sm" href="course.html">Course overview</a>
+</div></nav>
+<header class="top"><div class="wrap">
+  <h1>Choose your level, start date and class time</h1>
+  <p>Every class meets Tue · Thu · Sat · Sun for 2 hours, with 5 seats per class time. Intermediate runs 16 sessions over 4 weeks; Advanced runs 12 sessions over 3 weeks.</p>
+</div></header>
+<main class="wrap">
+  <div class="tabs" id="levelTabs"></div>
+  <p class="note" id="levelNote"></p>
+  <div class="tabs" id="cohortTabs"></div>
+  <div id="panel"><p class="note">Loading open seats…</p></div>
+</main>
+<footer>TIB Systems LLC · SAP GRC Security &amp; Fiori Labs · Questions: <a href="mailto:academy@tib-systems.com">academy@tib-systems.com</a> · <a href="index.html">Student sign in</a></footer>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const supabase = createClient('https://blfgwysgekfqhcafofhe.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJsZmd3eXNnZWtmcWhjYWZvZmhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyODY0NDksImV4cCI6MjA5NTg2MjQ0OX0.HPdIMd-X30QBufoL9BVSVte6s_Fc-OOKIq9MbwLrzcI');
+
+/* One checkout per option. Empty = online checkout not live yet: the page
+   sends a pre-filled reservation email instead. Add Systeme.io URLs when ready. */
+const LEVELS = {
+  intermediate: { label: 'Intermediate: Design & Build', price: '$950', checkout: '',
+    note: '16 live sessions over 4 weeks · Foundations as pre-work · 14 live labs from Tracks A–B · 3 marked builds · Intermediate certificate.' },
+  advanced: { label: 'Advanced: Go-Live, Support & Cloud', price: '$850', checkout: '',
+    note: '12 live sessions over 3 weeks · 11 live labs across Tracks A–D · 3 marked deliverables · entry by Intermediate certificate or an entry check.' },
+  both: { label: 'Both levels', price: '$1,650', checkout: '',
+    note: 'Pick an Intermediate start and class time — your seat in the same class time of the next Advanced cohort is held for you. Save $150.' },
+};
+let LEVEL = 'intermediate', COHORT = null, ROWS = [];
+const $ = id => document.getElementById(id);
+const fmtDate = d => new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const fmtTime = t => { const [h, m] = t.split(':').map(Number); return `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function renderLevels(){
+  $('levelTabs').innerHTML = '';
+  Object.entries(LEVELS).forEach(([k, v]) => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (k === LEVEL ? ' active' : '');
+    b.textContent = `${v.label} — ${v.price}`;
+    b.onclick = () => { LEVEL = k; COHORT = null; renderLevels(); render(); };
+    $('levelTabs').appendChild(b);
+  });
+  $('levelNote').textContent = LEVELS[LEVEL].note;
+}
+
+function render(){
+  const want = LEVEL === 'advanced' ? 'advanced' : 'intermediate';
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = ROWS.filter(r => r.level === want && r.start_date >= today);
+  const cohorts = [...new Map(rows.map(r => [r.cohort_id, r])).values()];
+  $('cohortTabs').innerHTML = '';
+  if (!cohorts.length){ $('panel').innerHTML = '<p class="msg err show">No cohorts are open for this level right now.</p>'; return; }
+  if (!COHORT || !cohorts.some(c => c.cohort_id === COHORT)) COHORT = cohorts[0].cohort_id;
+  cohorts.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'tab' + (c.cohort_id === COHORT ? ' active' : '');
+    b.textContent = `Starts ${fmtDate(c.start_date)}`;
+    b.onclick = () => { COHORT = c.cohort_id; render(); };
+    $('cohortTabs').appendChild(b);
+  });
+  const c = cohorts.find(x => x.cohort_id === COHORT);
+  const slots = rows.filter(r => r.cohort_id === COHORT).sort((a, b) => a.slot_number - b.slot_number);
+  const panel = $('panel');
+  panel.innerHTML = `<div class="strip">
+      <div><b>Runs</b><br>${fmtDate(c.start_date)} – ${fmtDate(c.end_date)}</div>
+      <div><b>Meets</b><br>Tue · Thu · Sat · Sun · ${c.sessions} sessions</div>
+      <div><b>Investment</b><br>${LEVELS[LEVEL].price} one-time</div></div>`;
+  slots.forEach(s => {
+    const block = document.createElement('div');
+    block.className = 'cls';
+    const label = `${s.label} · ${fmtTime(s.start_time)} – ${fmtTime(s.end_time)} CT`;
+    let seats = '';
+    for (let i = 1; i <= s.capacity; i++){
+      const closed = i <= s.enrolled_count;
+      seats += `<div class="seat ${closed ? 'closed' : 'open'}" data-i="${i}">${closed ? 'Taken' : 'Open'}</div>`;
+    }
+    block.innerHTML = `<div class="cls-head"><h2>${esc(s.label)}</h2><span class="cls-time">${fmtTime(s.start_time)} – ${fmtTime(s.end_time)} CT · ${s.seats_remaining} of ${s.capacity} seats open</span></div>
+      <div class="seats">${seats}</div>
+      <form class="enrol"><p class="note" style="margin:0">Selected: ${esc(label)} — starts ${fmtDate(c.start_date)}</p>
+        <label>Full name</label><input class="f-name" autocomplete="name" required>
+        <label>Email</label><input class="f-email" type="email" autocomplete="email" required>
+        <button class="btn btn-gold" type="submit">Reserve this seat — ${LEVELS[LEVEL].price}</button>
+        <div class="msg"></div></form>`;
+    const form = block.querySelector('form');
+    block.querySelectorAll('.seat.open').forEach(el => el.onclick = () => {
+      block.querySelectorAll('.seat').forEach(x => x.classList.remove('picked'));
+      el.classList.add('picked'); form.classList.add('active');
+      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    form.onsubmit = e => {
+      e.preventDefault();
+      const name = form.querySelector('.f-name').value.trim(), email = form.querySelector('.f-email').value.trim();
+      const msg = form.querySelector('.msg');
+      if (!name || !email) return;
+      const lv = LEVELS[LEVEL];
+      if (lv.checkout){
+        const u = new URL(lv.checkout);
+        u.searchParams.set('email', email); u.searchParams.set('slot_id', s.slot_id);
+        u.searchParams.set('class_slot', label); u.searchParams.set('level', LEVEL);
+        window.location.href = u.toString(); return;
+      }
+      const subject = `Reserve: SAP GRC Security & Fiori Labs — ${lv.label} — ${fmtDate(c.start_date)} — ${label}`;
+      const body = `Name: ${name}\nEmail: ${email}\nLevel: ${lv.label} (${lv.price})\nCohort: ${fmtDate(c.start_date)} – ${fmtDate(c.end_date)}\nClass: ${label}\nSlot ID: ${s.slot_id}`;
+      const href = `mailto:academy@tib-systems.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      msg.innerHTML = `Online payment for this course opens shortly. Your reservation email is ready — <a href="${href}">send it now</a> and we'll confirm your seat and payment details within one business day.`;
+      msg.className = 'msg ok show';
+      window.location.href = href;
+    };
+    panel.appendChild(block);
+  });
+}
+
+async function load(){
+  const { data, error } = await supabase.from('tib_live_slot_availability').select('*').eq('course', 'C2')
+    .order('start_date', { ascending: true }).order('slot_number', { ascending: true });
+  if (error){ $('panel').innerHTML = '<p class="msg err show">Could not load the schedule right now. Please refresh the page.</p>'; console.error(error); return; }
+  ROWS = data || [];
+  render();
+}
+renderLevels();
+load();
+</script>
+</body>
+</html>

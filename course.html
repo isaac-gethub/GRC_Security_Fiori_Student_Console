@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SAP GRC Security &amp; Fiori Labs — TIB Systems</title>
-<meta name="description" content="12 Foundations modules and 44 scenario labs in SAP GRC Access Control, SAP Security and Fiori — built from current SAP GRC Security consultant job postings. TIB Systems.">
+<meta name="description" content="Live instructor-led SAP GRC Security &amp; Fiori Labs in two levels — Intermediate: Design &amp; Build ($950) and Advanced: Go-Live, Support &amp; Cloud ($850). 12 Foundations modules and 44 scenario labs. TIB Systems.">
 <style>
   :root{
     --navy:#1F3864; --navy-dark:#152747; --blue:#2E5395; --accent:#3E7CB1; --gold:#B8860B; --gold-light:#D9A93A;
@@ -145,6 +145,24 @@
     .flow{grid-template-columns:repeat(2,1fr);}
     .two{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:start;}
   }
+  /* levels */
+  .levels{display:grid;gap:14px;margin-top:8px;}
+  .lvl{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .lvl.best{border:2px solid var(--gold-light);}
+  .lvl .lk{font-size:12px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;}
+  .lvl h3{margin:4px 0 2px;font-family:Georgia,serif;color:var(--navy);font-size:19px;}
+  .lvl .price{font-size:30px;font-weight:800;color:var(--navy);margin:6px 0 2px;}
+  .lvl .pn{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .lvl ul{margin:0;padding-left:18px;font-size:14.5px;}
+  .lvl li{margin-bottom:5px;}
+  .sched{margin-top:18px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:14.5px;}
+  .sched b{color:var(--navy);}
+  .dates{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;}
+  .dates span{background:#EAF0F8;border:1px solid #D3DEEE;border-radius:14px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--navy);}
+  .tag.int{background:#E3EEF9;color:var(--blue);}
+  .tag.adv{background:#FBEBD5;color:#8A5A08;}
+  .tag.ext{background:#EEF0F3;color:var(--muted);}
+  @media (min-width:880px){.levels{grid-template-columns:repeat(3,1fr);}}
 </style>
 </head>
 <body>
@@ -152,7 +170,7 @@
 <nav class="nav">
   <div class="wrap">
     <a class="brand" href="course.html">TIB Systems<span>SAP GRC Security &amp; Fiori Labs</span></a>
-    <div class="nav-links"><a href="#demand">Skills demand</a><a href="#inside">What's inside</a><a href="#labs">How labs work</a><a href="#faq">FAQ</a></div>
+    <div class="nav-links"><a href="#levels">Levels &amp; pricing</a><a href="#demand">Skills demand</a><a href="#inside">What's inside</a><a href="#labs">How labs work</a><a href="#faq">FAQ</a></div>
     <a class="btn btn-gold btn-sm" href="index.html">Sign in</a>
   </div>
 </nav>
@@ -163,8 +181,8 @@
     <h1>Practise the work SAP GRC Security consultants are hired to do.</h1>
     <p class="lede">12 Foundations modules and 44 scenario labs — role design, PFCG builds, SoD rulesets, MSMP workflows, Firefighter, Fiori and cloud identity — across the whole project lifecycle, from blueprint to hypercare. Built against current SAP GRC Security consultant job postings, not a generic syllabus.</p>
     <div class="cta-row">
-      <a class="btn btn-gold" href="#inside">See all 44 labs</a>
-      <a class="btn btn-ghost" href="#demand">How it maps to the job market</a>
+      <a class="btn btn-gold" href="#levels">Levels, dates &amp; pricing</a>
+      <a class="btn btn-ghost" href="#inside">See all 44 labs</a>
     </div>
     <div class="stats">
       <div class="stat"><b>12</b><span>Foundations modules</span></div>
@@ -175,6 +193,61 @@
     </div>
   </div>
 </header>
+
+<section class="alt" id="levels">
+  <div class="wrap">
+    <span class="kicker">Two levels</span>
+    <h2>Start with Design &amp; Build. Finish with Go-Live, Support &amp; Cloud.</h2>
+    <p class="sub">Both levels are taught live by an instructor on a real S/4HANA and GRC training system, with every lab ending in stakeholder pushback. Take them back to back, or go straight to Advanced after an entry check if you already build roles for a living.</p>
+    <div class="levels">
+      <div class="lvl">
+        <span class="lk">Intermediate</span>
+        <h3>Design &amp; Build</h3>
+        <div class="price">$950</div>
+        <div class="pn">One-time · 16 live sessions · 4 weeks</div>
+        <ul>
+          <li>Foundations 1–12 as pre-work, with a live clinic in session 1</li>
+          <li>14 labs live from Tracks A–B — each design followed by its build</li>
+          <li>4 labs as self-study, checked in class</li>
+          <li>3 marked builds (B1, B3, B10) and a stakeholder panel</li>
+          <li>Intermediate certificate</li>
+        </ul>
+      </div>
+      <div class="lvl">
+        <span class="lk">Advanced</span>
+        <h3>Go-Live, Support &amp; Cloud</h3>
+        <div class="price">$850</div>
+        <div class="pn">One-time · 12 live sessions · 3 weeks</div>
+        <ul>
+          <li>11 labs live: evidence readiness, cutover, hypercare, provisioning, privileged access, cloud identity, BRM, UAR, auditor requests</li>
+          <li>7 labs as self-study, 8 extended practice labs</li>
+          <li>3 marked deliverables (B12, C12, D7) and a stakeholder panel</li>
+          <li>Entry: Intermediate certificate or an entry check</li>
+          <li>Advanced certificate</li>
+        </ul>
+      </div>
+      <div class="lvl best">
+        <span class="lk">Both levels · best value</span>
+        <h3>Design to Hypercare</h3>
+        <div class="price">$1,650</div>
+        <div class="pn">One-time · 28 live sessions · save $150</div>
+        <ul>
+          <li>Intermediate and Advanced back to back</li>
+          <li>Your seat held in the matching Advanced cohort</li>
+          <li>Both certificates</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sched">
+      <b>Schedule (2027).</b> Tue · Thu · Sat · Sun, 2 hours a class, 5 seats per class time. Class times: 8:00–10:00 AM, 10:30 AM–12:30 PM and 1:00–3:00 PM CT. Plan for about 12 hours a week.
+      <div style="margin-top:10px;"><b>Intermediate starts</b></div>
+      <div class="dates"><span>Jan 5</span><span>Mar 2</span><span>Apr 27</span><span>Jun 22</span><span>Aug 17</span><span>Oct 12</span></div>
+      <b>Advanced starts</b>
+      <div class="dates"><span>Feb 9</span><span>Apr 6</span><span>Jun 1</span><span>Jul 27</span><span>Sep 21</span><span>Nov 16</span></div>
+      <a class="btn btn-gold" href="enrol.html">See open seats and enrol</a>
+    </div>
+  </div>
+</section>
 
 <section id="demand">
   <div class="wrap">
@@ -249,70 +322,70 @@
     </ul>
 
     <h2 style="margin-top:40px;" id="tracks">44 labs in four project tracks</h2>
-    <p class="sub">Each track follows a real SAP security engagement. Labs marked <span class="tag sim" style="margin:0">Simulation</span> are design exercises that don't need extra system configuration; <span class="tag new" style="margin:0">New</span> labs were added in October 2026 to close gaps found in the job postings.</p>
+    <p class="sub">Each track follows a real SAP security engagement. Tags show where each lab sits: <span class="tag int" style="margin:0">Int</span> Intermediate, <span class="tag adv" style="margin:0">Adv</span> Advanced, with its live session number, self-study, or extended practice. Labs marked <span class="tag sim" style="margin:0">Simulation</span> are design exercises that don't need extra system configuration; <span class="tag new" style="margin:0">New</span> labs were added in October 2026 to close gaps found in the job postings.</p>
 
     <details class="track" open>
       <summary><span class="tl">Track A</span><span class="tn">Design &amp; Blueprint</span><span class="tc">12 labs</span></summary>
       <p class="tdesc">Turn requirements into role, ruleset, workflow and governance designs a build team can follow.</p>
-      <ul class="labs"><li><span class="ln">A1</span><span class="lt"><b>The Matrix Nobody Agreed On</b><span class="ld">Role Design &amp; Naming Convention Standards</span></span></li>
-<li><span class="ln">A2</span><span class="lt"><b>The Rule That Didn&#x27;t Exist Yet</b><span class="ld">SoD Ruleset Design</span></span></li>
-<li><span class="ln">A3</span><span class="lt"><b>Nobody Owns the Fire Extinguisher</b><span class="ld">Emergency Access Management (Firefighter) Design</span></span></li>
-<li><span class="ln">A4</span><span class="lt"><b>The Approval Chain With No Chain</b><span class="ld">MSMP Workflow Design</span></span></li>
-<li><span class="ln">A5</span><span class="lt"><b>The Launchpad With No Floor Plan</b><span class="ld">Fiori Launchpad Space &amp; Catalog Design</span></span></li>
-<li><span class="ln">A6</span><span class="lt"><b>The Same Question, Answered Five Different Ways</b><span class="ld">SU24 Authorization Default Governance Design</span></span></li>
-<li><span class="ln">A7</span><span class="lt"><b>The Form That Asked the Wrong Questions</b><span class="ld">Access Request Form Design</span></span></li>
-<li><span class="ln">A8</span><span class="lt"><b>One Risk Library, Three Different Answers</b><span class="ld">SoD Risk Library Scoping Design</span></span></li>
-<li><span class="ln">A9</span><span class="lt"><b>Forty Roles and No Owners</b><span class="ld">Business Role Management (BRM) Governance Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">A10</span><span class="lt"><b>The Review Everyone Approved</b><span class="ld">User Access Review (UAR) Campaign Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">A11</span><span class="lt"><b>The Cloud App Nobody Governs</b><span class="ld">BTP / Cloud Identity &amp; IAG Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">A12</span><span class="lt"><b>The Request List That Arrived on Monday</b><span class="ld">SOX Access-Evidence Readiness Design</span></span><span class="tag new">New</span></li></ul>
+      <ul class="labs"><li><span class="ln">A1</span><span class="lt"><b>The Matrix Nobody Agreed On</b><span class="ld">Role Design &amp; Naming Convention Standards</span></span><span class="tag int">Int · S2</span></li>
+<li><span class="ln">A2</span><span class="lt"><b>The Rule That Didn&#x27;t Exist Yet</b><span class="ld">SoD Ruleset Design</span></span><span class="tag int">Int · S4</span></li>
+<li><span class="ln">A3</span><span class="lt"><b>Nobody Owns the Fire Extinguisher</b><span class="ld">Emergency Access Management (Firefighter) Design</span></span><span class="tag int">Int · S6</span></li>
+<li><span class="ln">A4</span><span class="lt"><b>The Approval Chain With No Chain</b><span class="ld">MSMP Workflow Design</span></span><span class="tag int">Int · S8</span></li>
+<li><span class="ln">A5</span><span class="lt"><b>The Launchpad With No Floor Plan</b><span class="ld">Fiori Launchpad Space &amp; Catalog Design</span></span><span class="tag int">Int · S10</span></li>
+<li><span class="ln">A6</span><span class="lt"><b>The Same Question, Answered Five Different Ways</b><span class="ld">SU24 Authorization Default Governance Design</span></span><span class="tag int">Int · S13</span></li>
+<li><span class="ln">A7</span><span class="lt"><b>The Form That Asked the Wrong Questions</b><span class="ld">Access Request Form Design</span></span><span class="tag int">Int · Self-study</span></li>
+<li><span class="ln">A8</span><span class="lt"><b>One Risk Library, Three Different Answers</b><span class="ld">SoD Risk Library Scoping Design</span></span><span class="tag int">Int · S15</span></li>
+<li><span class="ln">A9</span><span class="lt"><b>Forty Roles and No Owners</b><span class="ld">Business Role Management (BRM) Governance Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · S8</span></li>
+<li><span class="ln">A10</span><span class="lt"><b>The Review Everyone Approved</b><span class="ld">User Access Review (UAR) Campaign Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · S9</span></li>
+<li><span class="ln">A11</span><span class="lt"><b>The Cloud App Nobody Governs</b><span class="ld">BTP / Cloud Identity &amp; IAG Design</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · S7</span></li>
+<li><span class="ln">A12</span><span class="lt"><b>The Request List That Arrived on Monday</b><span class="ld">SOX Access-Evidence Readiness Design</span></span><span class="tag new">New</span><span class="tag adv">Adv · S1</span></li></ul>
     </details>
 
     <details class="track">
       <summary><span class="tl">Track B</span><span class="tn">Configuration &amp; Build</span><span class="tc">12 labs</span></summary>
       <p class="tdesc">Build it in the system — roles, rules, workflows, Fiori content — and prove it works.</p>
-      <ul class="labs"><li><span class="ln">B1</span><span class="lt"><b>The Boundary the Matrix Didn&#x27;t Explain</b><span class="ld">PFCG Role Build from Role Matrix</span></span></li>
-<li><span class="ln">B2</span><span class="lt"><b>The App That Wasn&#x27;t There Anymore</b><span class="ld">SoD Ruleset Technical Build</span></span></li>
-<li><span class="ln">B3</span><span class="lt"><b>The Stage With No Way Out</b><span class="ld">MSMP / BRF+ Workflow Technical Build</span></span></li>
-<li><span class="ln">B4</span><span class="lt"><b>The App That Wasn&#x27;t Supposed to Exist Anymore</b><span class="ld">Fiori Launchpad Technical Build</span></span></li>
-<li><span class="ln">B5</span><span class="lt"><b>The Transaction the Analysis Got Wrong</b><span class="ld">Emergency Access Management (Firefighter) Technical Build</span></span></li>
-<li><span class="ln">B6</span><span class="lt"><b>Two Teams, One Standard, Different Tools</b><span class="ld">SU24 Authorization Default Governance — Technical Build</span></span></li>
-<li><span class="ln">B7</span><span class="lt"><b>The Rule the Tool Couldn&#x27;t Quite Follow</b><span class="ld">Access Request Form Technical Build</span></span></li>
-<li><span class="ln">B8</span><span class="lt"><b>The Draft That Wouldn&#x27;t Retire Quietly</b><span class="ld">SoD Risk Library Technical Build</span></span></li>
-<li><span class="ln">B9</span><span class="lt"><b>The Master Role That Wouldn&#x27;t Derive</b><span class="ld">BRM Technical Build — Master and Derived Roles</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">B10</span><span class="lt"><b>The Tile That Opened Nothing</b><span class="ld">Fiori OData Service Enablement and S_SERVICE Build</span></span><span class="tag new">New</span></li>
-<li><span class="ln">B11</span><span class="lt"><b>Can&#x27;t Post, Won&#x27;t Wait</b><span class="ld">Authorization Troubleshooting Ticket — SU53 / STAUTHTRACE / SUIM</span></span><span class="tag new">New</span></li>
-<li><span class="ln">B12</span><span class="lt"><b>The Log Nobody Was Writing</b><span class="ld">Privileged-ID Review and Security Audit Log Filter Build</span></span><span class="tag new">New</span></li></ul>
+      <ul class="labs"><li><span class="ln">B1</span><span class="lt"><b>The Boundary the Matrix Didn&#x27;t Explain</b><span class="ld">PFCG Role Build from Role Matrix</span></span><span class="tag int">Int · S3</span></li>
+<li><span class="ln">B2</span><span class="lt"><b>The App That Wasn&#x27;t There Anymore</b><span class="ld">SoD Ruleset Technical Build</span></span><span class="tag int">Int · S5</span></li>
+<li><span class="ln">B3</span><span class="lt"><b>The Stage With No Way Out</b><span class="ld">MSMP / BRF+ Workflow Technical Build</span></span><span class="tag int">Int · S9</span></li>
+<li><span class="ln">B4</span><span class="lt"><b>The App That Wasn&#x27;t Supposed to Exist Anymore</b><span class="ld">Fiori Launchpad Technical Build</span></span><span class="tag int">Int · S11</span></li>
+<li><span class="ln">B5</span><span class="lt"><b>The Transaction the Analysis Got Wrong</b><span class="ld">Emergency Access Management (Firefighter) Technical Build</span></span><span class="tag int">Int · S7</span></li>
+<li><span class="ln">B6</span><span class="lt"><b>Two Teams, One Standard, Different Tools</b><span class="ld">SU24 Authorization Default Governance — Technical Build</span></span><span class="tag int">Int · Self-study</span></li>
+<li><span class="ln">B7</span><span class="lt"><b>The Rule the Tool Couldn&#x27;t Quite Follow</b><span class="ld">Access Request Form Technical Build</span></span><span class="tag int">Int · Self-study</span></li>
+<li><span class="ln">B8</span><span class="lt"><b>The Draft That Wouldn&#x27;t Retire Quietly</b><span class="ld">SoD Risk Library Technical Build</span></span><span class="tag int">Int · Self-study</span></li>
+<li><span class="ln">B9</span><span class="lt"><b>The Master Role That Wouldn&#x27;t Derive</b><span class="ld">BRM Technical Build — Master and Derived Roles</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">B10</span><span class="lt"><b>The Tile That Opened Nothing</b><span class="ld">Fiori OData Service Enablement and S_SERVICE Build</span></span><span class="tag new">New</span><span class="tag int">Int · S12</span></li>
+<li><span class="ln">B11</span><span class="lt"><b>Can&#x27;t Post, Won&#x27;t Wait</b><span class="ld">Authorization Troubleshooting Ticket — SU53 / STAUTHTRACE / SUIM</span></span><span class="tag new">New</span><span class="tag int">Int · S14</span></li>
+<li><span class="ln">B12</span><span class="lt"><b>The Log Nobody Was Writing</b><span class="ld">Privileged-ID Review and Security Audit Log Filter Build</span></span><span class="tag new">New</span><span class="tag adv">Adv · S6</span></li></ul>
     </details>
 
     <details class="track">
       <summary><span class="tl">Track C</span><span class="tn">Go-Live &amp; Cutover</span><span class="tc">12 labs</span></summary>
       <p class="tdesc">Mass loads, go/no-go calls, hypercare, first reviews and auditor requests under real deadlines.</p>
-      <ul class="labs"><li><span class="ln">C1</span><span class="lt"><b>The Load That Almost Went Out Wrong</b><span class="ld">Mass Role Assignment (LSMW) Cutover Execution</span></span></li>
-<li><span class="ln">C2</span><span class="lt"><b>The War Room at 2 AM</b><span class="ld">Go-Live Hypercare Ticket Triage</span></span></li>
-<li><span class="ln">C3</span><span class="lt"><b>The Firefighter Nobody Had Time to Provision</b><span class="ld">Emergency Access During the Blackout Window</span></span></li>
-<li><span class="ln">C4</span><span class="lt"><b>The Go/No-Go Call</b><span class="ld">Security Readiness Sign-off Before Go-Live</span></span></li>
-<li><span class="ln">C5</span><span class="lt"><b>The Access That Didn&#x27;t Follow the User</b><span class="ld">Day-1 Post-Cutover Access Verification</span></span></li>
-<li><span class="ln">C6</span><span class="lt"><b>The Rehearsal That Skipped a Step</b><span class="ld">Cutover Rehearsal (Mock Go-Live) Defect</span></span></li>
-<li><span class="ln">C7</span><span class="lt"><b>Everyone Wants to Be a Firefighter This Weekend</b><span class="ld">Hypercare Access Escalation Management</span></span></li>
-<li><span class="ln">C8</span><span class="lt"><b>The Last Ticket Before Stabilization</b><span class="ld">Hypercare Exit / Stabilization Sign-off</span></span></li>
-<li><span class="ln">C9</span><span class="lt"><b>The First Review After Go-Live</b><span class="ld">First Post-Go-Live UAR Campaign</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">C10</span><span class="lt"><b>Approved, but Not There</b><span class="ld">GRC Connector and Provisioning Failure at Go-Live</span></span><span class="tag new">New</span></li>
-<li><span class="ln">C11</span><span class="lt"><b>Day One, No Login</b><span class="ld">Day-1 Cloud Provisioning Failure (IPS / IAS)</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span></li>
-<li><span class="ln">C12</span><span class="lt"><b>Twelve Requests by Friday</b><span class="ld">External Auditor Evidence Request in Hypercare</span></span><span class="tag new">New</span></li></ul>
+      <ul class="labs"><li><span class="ln">C1</span><span class="lt"><b>The Load That Almost Went Out Wrong</b><span class="ld">Mass Role Assignment (LSMW) Cutover Execution</span></span><span class="tag adv">Adv · S2</span></li>
+<li><span class="ln">C2</span><span class="lt"><b>The War Room at 2 AM</b><span class="ld">Go-Live Hypercare Ticket Triage</span></span><span class="tag adv">Adv · S4</span></li>
+<li><span class="ln">C3</span><span class="lt"><b>The Firefighter Nobody Had Time to Provision</b><span class="ld">Emergency Access During the Blackout Window</span></span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">C4</span><span class="lt"><b>The Go/No-Go Call</b><span class="ld">Security Readiness Sign-off Before Go-Live</span></span><span class="tag adv">Adv · S3</span></li>
+<li><span class="ln">C5</span><span class="lt"><b>The Access That Didn&#x27;t Follow the User</b><span class="ld">Day-1 Post-Cutover Access Verification</span></span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">C6</span><span class="lt"><b>The Rehearsal That Skipped a Step</b><span class="ld">Cutover Rehearsal (Mock Go-Live) Defect</span></span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">C7</span><span class="lt"><b>Everyone Wants to Be a Firefighter This Weekend</b><span class="ld">Hypercare Access Escalation Management</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">C8</span><span class="lt"><b>The Last Ticket Before Stabilization</b><span class="ld">Hypercare Exit / Stabilization Sign-off</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">C9</span><span class="lt"><b>The First Review After Go-Live</b><span class="ld">First Post-Go-Live UAR Campaign</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">C10</span><span class="lt"><b>Approved, but Not There</b><span class="ld">GRC Connector and Provisioning Failure at Go-Live</span></span><span class="tag new">New</span><span class="tag adv">Adv · S5</span></li>
+<li><span class="ln">C11</span><span class="lt"><b>Day One, No Login</b><span class="ld">Day-1 Cloud Provisioning Failure (IPS / IAS)</span></span><span class="tag new">New</span><span class="tag sim">Simulation</span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">C12</span><span class="lt"><b>Twelve Requests by Friday</b><span class="ld">External Auditor Evidence Request in Hypercare</span></span><span class="tag new">New</span><span class="tag adv">Adv · S10</span></li></ul>
     </details>
 
     <details class="track">
       <summary><span class="tl">Track D</span><span class="tn">Post-Go-Live Support</span><span class="tc">8 labs</span></summary>
       <p class="tdesc">Diagnose and fix the access problems that surface once the business is live.</p>
-      <ul class="labs"><li><span class="ln">D1</span><span class="lt"><b>The Ruleset That Went Quiet</b><span class="ld">Access Risk Analysis / SoD Ruleset Design</span></span></li>
-<li><span class="ln">D2</span><span class="lt"><b>The Shared Login</b><span class="ld">Emergency Access Management (Firefighter)</span></span></li>
-<li><span class="ln">D3</span><span class="lt"><b>The Split That Closed a Door</b><span class="ld">Business Role Design &amp; PFCG</span></span></li>
-<li><span class="ln">D4</span><span class="lt"><b>The Approval Nobody Sent</b><span class="ld">MSMP Workflow (GRC Access Control)</span></span></li>
-<li><span class="ln">D5</span><span class="lt"><b>Copied From Someone Else</b><span class="ld">Access Control Provisioning</span></span></li>
-<li><span class="ln">D6</span><span class="lt"><b>The Proposal Nobody Updated</b><span class="ld">User &amp; Role Administration / SU24 Authorization Defaults</span></span></li>
-<li><span class="ln">D7</span><span class="lt"><b>Resolved on the Report</b><span class="ld">SoD Remediation &amp; Mitigating Controls</span></span></li>
-<li><span class="ln">D8</span><span class="lt"><b>The Tile That Opened Everything</b><span class="ld">Fiori Catalog &amp; Space Security</span></span></li></ul>
+      <ul class="labs"><li><span class="ln">D1</span><span class="lt"><b>The Ruleset That Went Quiet</b><span class="ld">Access Risk Analysis / SoD Ruleset Design</span></span><span class="tag adv">Adv · Self-study</span></li>
+<li><span class="ln">D2</span><span class="lt"><b>The Shared Login</b><span class="ld">Emergency Access Management (Firefighter)</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">D3</span><span class="lt"><b>The Split That Closed a Door</b><span class="ld">Business Role Design &amp; PFCG</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">D4</span><span class="lt"><b>The Approval Nobody Sent</b><span class="ld">MSMP Workflow (GRC Access Control)</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">D5</span><span class="lt"><b>Copied From Someone Else</b><span class="ld">Access Control Provisioning</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">D6</span><span class="lt"><b>The Proposal Nobody Updated</b><span class="ld">User &amp; Role Administration / SU24 Authorization Defaults</span></span><span class="tag ext">Extended</span></li>
+<li><span class="ln">D7</span><span class="lt"><b>Resolved on the Report</b><span class="ld">SoD Remediation &amp; Mitigating Controls</span></span><span class="tag adv">Adv · S11</span></li>
+<li><span class="ln">D8</span><span class="lt"><b>The Tile That Opened Everything</b><span class="ld">Fiori Catalog &amp; Space Security</span></span><span class="tag ext">Extended</span></li></ul>
     </details>
   </div>
 </section>
@@ -353,7 +426,10 @@
     <h2>Before you enrol</h2>
     <details class="q"><summary>Who is this for?</summary><p>Junior and mid-level SAP consultants, auditors and administrators moving into SAP Security and GRC, and anyone who has the theory but not the hands-on judgement employers test for.</p></details>
     <details class="q"><summary>Do I need to know how to code?</summary><p>No. You need to understand that SAP access is controlled through configuration and roles that can be inspected and changed — the Foundations modules teach exactly that.</p></details>
-    <details class="q"><summary>Where should I start?</summary><p>Work through Foundations 1–8 first, then the tracks in order A → B → C → D. Foundations 9–12 can be taken any time after Module 3.</p></details>
+    <details class="q"><summary>Where should I start?</summary><p>Complete Foundations 1–12 at your own pace before Intermediate session 1. Intermediate then works Tracks A–B (design, then build); Advanced works Tracks C–D plus the cloud identity, BRM, UAR and privileged-access labs.</p></details>
+    <details class="q"><summary>What does it cost, and how do the levels work?</summary><p>Intermediate: Design &amp; Build is $950; Advanced: Go-Live, Support &amp; Cloud is $850; both together are $1,650. Each is a one-time payment with its own certificate. Advanced starts a week after each Intermediate cohort ends.</p></details>
+    <details class="q"><summary>Can I go straight to Advanced?</summary><p>Yes, if you already design and build SAP roles and GRC configuration at work. We confirm it with a short entry check before you enrol.</p></details>
+    <details class="q"><summary>How much time should I plan each week?</summary><p>About 12 hours: 8 hours of live class (four 2-hour sessions) plus repeating the lab steps on your own login and your self-study labs.</p></details>
     <details class="q"><summary>How is this different from a video course?</summary><p>It is taught by a live instructor. Every lab is a scenario you work through and write up, ending with the pushback and escalation questions real stakeholders ask — so you practise the reasoning, not just the clicks.</p></details>
     <details class="q"><summary>I'm already enrolled — where do I go?</summary><p>Sign in with the email you enrolled with. If your enrolment isn't showing after a day, contact <a href="mailto:support@tib-systems.com">support@tib-systems.com</a>.</p></details>
   </div>
@@ -362,9 +438,9 @@
 <section class="final">
   <div class="wrap">
     <h2>Train on the work, not just the screens.</h2>
-    <p>12 Foundations modules, 44 labs and four project tracks — mapped to what SAP GRC Security employers are asking for right now.</p>
+    <p>Two levels — Intermediate $950, Advanced $850, both $1,650. 12 Foundations modules, 44 labs and four project tracks, mapped to what SAP GRC Security employers are asking for right now.</p>
     <div class="cta-row">
-      <a class="btn btn-gold" href="mailto:support@tib-systems.com?subject=SAP%20GRC%20Security%20%26%20Fiori%20Labs%20%E2%80%94%20enrolment">Ask about enrolment</a>
+      <a class="btn btn-gold" href="enrol.html">See open seats and enrol</a>
       <a class="btn btn-ghost" href="index.html">Already enrolled? Sign in</a>
     </div>
   </div>
