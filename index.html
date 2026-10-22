@@ -214,8 +214,10 @@
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
   });
 
-  var TRACKS_ORDER = ['S','0','A','B','C','D'];
+  var TRACKS_ORDER = ['S','0','A','B','C','D','M','I'];
   var TRACK_META = {
+    M: { name: 'Course Materials', type: 'materials' },
+    I: { name: 'Instructor Documents &#128274;', type: 'instdocs' },
     S: { name: 'By session', type: 'sessions' },
     '0': { name: 'Foundations', type: 'foundations' },
     A: { name: 'Design &amp; Blueprint', type: 'scenario', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
@@ -318,6 +320,67 @@
     return html + '</div>';
   }
 
+  // ---------- Course Materials (trainees) ----------
+  var MATERIALS = [
+    ['materials/00-start-here/GRC-Trainee-User-Guide-Start-to-Finish.docx', 'Trainee User Guide — Start to Finish', 'How to use this console session by session, live or as self-study'],
+    ['TIB_GRC_Security_Career_Guide.pdf', 'SAP GRC Security Career Guide', 'The roles this course prepares you for'],
+  ];
+  function renderMaterials(main){
+    var html = '<h2 class="page-title">Course Materials</h2><p class="page-sub">Every document you need for the course. Your instructor will not email files &mdash; open them here. Labs and Foundations are in the other tabs.</p><div class="card">';
+    MATERIALS.forEach(function(m){
+      html += '<a class="lab-card" style="text-decoration:none;color:inherit" href="' + m[0] + '" download><div><div class="l-title">' + m[1] + '</div><div class="l-sub">' + m[2] + '</div></div><span class="status-chip todo">Download</span></a>';
+    });
+    main.innerHTML = html + '</div>';
+  }
+
+  // ---------- Instructor Documents (staff only; private storage, signed links) ----------
+  var staffClient = window.supabase.createClient(GRC_SUPABASE_URL, GRC_SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false, storageKey: 'grc-staff-auth' }
+  });
+  var staffOk = false;
+  var INSTRUCTOR_DOC_NOTES = {
+    'TIB-GRC-INST-001_Instructor-Delivery-Schedule_V1.docx': ['Instructor Delivery Schedule', 'Class-by-class delivery for all 28 sessions, with model answers — follow it exactly'],
+    'TIB_Course2_Slide_Deck_V3.pptx': ['Course 2 slide deck', 'Intermediate S1 and Advanced S1']
+  };
+  function renderInstructorDocs(main){
+    if(!staffOk){
+      main.innerHTML = '<h2 class="page-title">Instructor Documents</h2><p class="page-sub">Course staff only. Sign in with your instructor email and password. This does not change your own console session.</p>' +
+        '<div class="card" style="max-width:420px"><div class="field"><label>Instructor email</label><input type="email" id="staff-email" autocomplete="off"></div>' +
+        '<div class="field"><label>Password</label><input type="password" id="staff-pass" autocomplete="off"></div><div id="staff-msg"></div>' +
+        '<button class="btn" id="staff-btn" onclick="staffSignIn()">Sign in</button></div>';
+      return;
+    }
+    main.innerHTML = '<h2 class="page-title">Instructor Documents</h2><p class="page-sub">Loading&hellip;</p>';
+    staffClient.storage.from('instructor-docs').list('c2', { sortBy: { column: 'name', order: 'asc' } }).then(function(res){
+      var html = '<h2 class="page-title">Instructor Documents</h2><p class="page-sub">Staff only. Each link works for five minutes. Do not forward these files, post them in chat or keep copies outside the console.</p><div class="card">';
+      var files = (res.data || []).filter(function(f){ return f.name && f.name.charAt(0) !== '.'; });
+      if(res.error || !files.length){ html += '<div class="msg error">' + esc(res.error ? res.error.message : 'No documents are available to this account.') + '</div>'; }
+      files.forEach(function(f){
+        var n = INSTRUCTOR_DOC_NOTES[f.name] || [f.name, ''];
+        html += '<div class="lab-card" onclick="openStaffDoc(\'' + f.name.replace(/'/g, '') + '\')"><div><div class="l-title">' + esc(n[0]) + '</div><div class="l-sub">' + esc(n[1]) + '</div></div><span class="status-chip todo">Open</span></div>';
+      });
+      main.innerHTML = html + '</div>';
+    });
+  }
+  async function staffSignIn(){
+    var email = document.getElementById('staff-email').value.trim();
+    var pass = document.getElementById('staff-pass').value;
+    if(!email || !pass){ msg('staff-msg', 'Enter your email and password.', 'error'); return; }
+    setBusy('staff-btn', true, 'Signing in...');
+    var r = await staffClient.auth.signInWithPassword({ email: email, password: pass });
+    if(r.error){ setBusy('staff-btn', false); msg('staff-msg', 'Sign-in failed. Check the email and password.', 'error'); return; }
+    var ok = await staffClient.rpc('is_course_staff', { p_course: 'C2' });
+    if(!ok.data){ await staffClient.auth.signOut(); setBusy('staff-btn', false); msg('staff-msg', 'Access denied.', 'error'); return; }
+    staffOk = true; render();
+  }
+  window.staffSignIn = staffSignIn;
+  async function openStaffDoc(name){
+    var r = await staffClient.storage.from('instructor-docs').createSignedUrl('c2/' + name, 300, { download: name });
+    if(r.error || !r.data){ alert('Could not open the document. Sign in again.'); return; }
+    window.location.href = r.data.signedUrl;
+  }
+  window.openStaffDoc = openStaffDoc;
+
   function renderSessionList(main){
     var plan = SESSION_PLAN[currentLevel];
     var html = '<div class="lvl-switch">';
@@ -402,7 +465,7 @@
   // ---------- CONTENT LOADING ----------
   async function loadLabContent(){
     await loadAllLabs();
-    if (TRACK_META[currentTrack].type === 'sessions') { LABS = []; FOUNDATIONS = []; return; }
+    if (['sessions','materials','instdocs'].indexOf(TRACK_META[currentTrack].type) > -1) { LABS = []; FOUNDATIONS = []; return; }
     if (TRACK_META[currentTrack].type === 'foundations') {
       var fres = await grc.from('grc_foundations_content').select('*').order('module_number');
       if(fres.error) throw fres.error;
@@ -622,6 +685,8 @@
     window.scrollTo(0,0);
 
     if(TRACK_META[currentTrack].type === 'sessions'){ return renderSessionList(main); }
+    if(TRACK_META[currentTrack].type === 'materials'){ document.getElementById('mode-tabs').innerHTML = ''; return renderMaterials(main); }
+    if(TRACK_META[currentTrack].type === 'instdocs'){ document.getElementById('mode-tabs').innerHTML = ''; return renderInstructorDocs(main); }
     var isFoundations = TRACK_META[currentTrack].type === 'foundations';
     var items = isFoundations ? FOUNDATIONS : LABS;
     if(items.length === 0){
