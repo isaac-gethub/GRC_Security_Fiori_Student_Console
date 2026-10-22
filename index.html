@@ -239,17 +239,17 @@
   var REMOTE_DONE = {};       // module_id -> true, from grc_progress
 
   /* Session plan — live labs come from grc_lab_content.live_session; sessions without a lab,
-     when each self-study lab is set, and the marked work come from the course plan. */
+     when each self-study lab is set, and the certificate come from the course plan. */
   var SESSION_PLAN = {
     intermediate: { label: 'Intermediate', sub: 'Design &amp; Build', total: 16,
-      plain: { 1: ['Kickoff &mdash; Foundations clinic', 'Foundations check, system access, how a ticket lab runs'],
-               16: ['Stakeholder panel and close', 'Present one design-and-build to an auditor, a developer and a business owner'] },
+      plain: { 1: ['Kickoff &mdash; Foundations clinic', 'Foundations review, system access, how a ticket lab runs'],
+               16: ['Review and close', 'Walk back through the level&rsquo;s builds, open questions, the Advanced pathway and career next steps'] },
       selfDue: { 13: ['B6'], 15: ['A7','B7','B8'] },
-      marks: { 1: 'Foundations check', 3: 'Marked build 1', 9: 'Marked build 2', 12: 'Marked build 3', 16: 'Panel graded &middot; Intermediate certificate' } },
+      marks: { 16: 'Intermediate certificate: all labs completed' } },
     advanced: { label: 'Advanced', sub: 'Go-Live, Support &amp; Cloud', total: 12,
-      plain: { 12: ['Stakeholder panel and close', 'One go-live or support resolution to an auditor, a developer and a business owner'] },
+      plain: { 12: ['Review and close', 'Walk back through the level&rsquo;s go-live and support work, open questions and career next steps'] },
       selfDue: { 2: ['C6'], 3: ['C3'], 4: ['C5'], 7: ['C11'], 8: ['B9'], 9: ['C9'], 11: ['D1'] },
-      marks: { 1: 'Entry check', 6: 'Marked deliverable 1', 10: 'Marked deliverable 2', 11: 'Marked deliverable 3', 12: 'Panel graded &middot; Advanced certificate' } }
+      marks: { 12: 'Advanced certificate: all labs completed' } }
   };
   function labCode(l){ return l.track + l.lab; }
   function findLab(code){ return ALL_LABS.filter(function(l){ return labCode(l) === code; })[0]; }
@@ -315,7 +315,7 @@
       html += '<button class="btn" onclick="openSessionLab(\'' + labCode(nx) + '\')">Next: ' + where + ' &middot; ' + labCode(nx) + ' ' + esc(nx.book) + ' &rarr;</button>';
     } else {
       var plan = SESSION_PLAN[a.level];
-      html += '<span class="done-note">Last lab of the ' + plan.label + ' level &mdash; next: session ' + plan.total + ', the stakeholder panel' + (a.level === 'intermediate' ? ', then the Advanced level' : '') + '.</span>';
+      html += '<span class="done-note">Last lab of the ' + plan.label + ' level &mdash; next: session ' + plan.total + ', review and close' + (a.level === 'intermediate' ? ', then the Advanced level' : '') + '.</span>';
     }
     return html + '</div>';
   }
