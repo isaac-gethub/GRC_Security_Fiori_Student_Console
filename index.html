@@ -93,6 +93,27 @@
   .model-box.shown{display:block;}
   .model-box .tag{font-size:0.68rem; font-weight:700; color:var(--green); text-transform:uppercase; margin-bottom:4px;}
   .quote-box{font-style:italic; background:#F8F9FC; border-left:3px solid var(--accent); padding:10px 14px; border-radius:6px; font-size:0.88rem; margin-bottom:10px;}
+  /* By session view */
+  .lvl-switch{display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap;}
+  .lvl-switch button{font-family:inherit; font-size:0.8rem; font-weight:700; background:#fff; color:var(--navy); border:1.5px solid var(--border); padding:7px 14px; border-radius:16px; cursor:pointer;}
+  .lvl-switch button.on{background:var(--navy); border-color:var(--navy); color:#fff;}
+  .sess-row{display:flex; align-items:center; gap:12px; padding:11px 14px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px; background:#fff; cursor:pointer;}
+  .sess-row:hover{border-color:var(--accent);}
+  .sess-row .sn{font-weight:800; color:var(--gold); min-width:34px; font-size:0.85rem;}
+  .sess-row .code{font-weight:700; color:var(--accent); min-width:30px; font-size:0.8rem;}
+  .sess-row .t{flex:1; min-width:0;}
+  .sess-row .t b{display:block; font-size:0.9rem;}
+  .sess-row .t small{font-size:0.75rem; color:var(--muted);}
+  .sess-row.plain{background:#F7F8FB; cursor:default;}
+  .sess-row.plain .t b{font-weight:600; font-style:italic; color:var(--muted);}
+  .sess-row.self{margin-left:34px; background:#FFFBF2; border-style:dashed;}
+  .sess-row.ext{background:#FAFAFA;}
+  .mark-tag{display:inline-block; font-size:0.68rem; font-weight:700; color:#8A5A00; background:#FFF3D6; border-radius:999px; padding:2px 8px; margin-top:3px;}
+  .lvl-badge{display:inline-block; font-size:0.72rem; font-weight:700; color:#fff; background:var(--navy); border-radius:999px; padding:3px 10px; margin-bottom:10px;}
+  .lvl-badge.self{background:var(--gold);} .lvl-badge.ext{background:#6B7280;}
+  .session-nav{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-top:16px; padding-top:14px; border-top:1px solid var(--border);}
+  .session-nav .done-note{font-size:0.82rem; color:var(--green); font-weight:700;}
+  @media (max-width:600px){ .sess-row.self{margin-left:14px;} .sess-row{gap:8px;} }
   .mark-complete-row{display:flex; justify-content:flex-end; align-items:center; gap:12px; margin-top:18px;}
   .mark-complete-row .status-note{font-size:0.8rem; color:var(--muted);}
   .mark-complete-row .status-note.done{color:var(--green); font-weight:700;}
@@ -193,8 +214,9 @@
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
   });
 
-  var TRACKS_ORDER = ['0','A','B','C','D'];
+  var TRACKS_ORDER = ['S','0','A','B','C','D'];
   var TRACK_META = {
+    S: { name: 'By session', type: 'sessions' },
     '0': { name: 'Foundations', type: 'foundations' },
     A: { name: 'Design &amp; Blueprint', type: 'scenario', banner: 'If you can\'t state the requirement, why it matters, and what the design needs to look like, you\'re not ready to open a transaction yet.',
          fields: { 1: 'The Requirement', 4: 'Design Objective', 5: 'Target Design', 9: 'Design Approach', 10: 'Deliverable Evidence', 13: 'Blueprint Write-up' } },
@@ -207,7 +229,140 @@
   };
 
   var userEmail = null;
-  var currentTrack = '0';
+  var currentTrack = 'S';
+  var currentLevel = 'intermediate';
+  try { currentLevel = localStorage.getItem('grcLevel') || 'intermediate'; } catch(e) {}
+  var sessionNav = false;     // true when a lab was opened from the By session view
+  var ALL_LABS = [];          // every lab, all tracks: code, level, session, mode
+  var REMOTE_DONE = {};       // module_id -> true, from grc_progress
+
+  /* Session plan — live labs come from grc_lab_content.live_session; sessions without a lab,
+     when each self-study lab is set, and the marked work come from the course plan. */
+  var SESSION_PLAN = {
+    intermediate: { label: 'Intermediate', sub: 'Design &amp; Build', total: 16,
+      plain: { 1: ['Kickoff &mdash; Foundations clinic', 'Foundations check, system access, how a ticket lab runs'],
+               16: ['Stakeholder panel and close', 'Present one design-and-build to an auditor, a developer and a business owner'] },
+      selfDue: { 13: ['B6'], 15: ['A7','B7','B8'] },
+      marks: { 1: 'Foundations check', 3: 'Marked build 1', 9: 'Marked build 2', 12: 'Marked build 3', 16: 'Panel graded &middot; Intermediate certificate' } },
+    advanced: { label: 'Advanced', sub: 'Go-Live, Support &amp; Cloud', total: 12,
+      plain: { 12: ['Stakeholder panel and close', 'One go-live or support resolution to an auditor, a developer and a business owner'] },
+      selfDue: { 2: ['C6'], 3: ['C3'], 4: ['C5'], 7: ['C11'], 8: ['B9'], 9: ['C9'], 11: ['D1'] },
+      marks: { 1: 'Entry check', 6: 'Marked deliverable 1', 10: 'Marked deliverable 2', 11: 'Marked deliverable 3', 12: 'Panel graded &middot; Advanced certificate' } }
+  };
+  function labCode(l){ return l.track + l.lab; }
+  function findLab(code){ return ALL_LABS.filter(function(l){ return labCode(l) === code; })[0]; }
+  function isDone(l){
+    var key = l.track + '_lab' + l.lab;
+    return !!((state[key] && state[key].complete) || REMOTE_DONE[key]);
+  }
+  function sessionSequence(level){
+    var plan = SESSION_PLAN[level], seq = [];
+    for(var s = 1; s <= plan.total; s++){
+      ALL_LABS.forEach(function(l){ if(l.level === level && l.session === s) seq.push(l); });
+      (plan.selfDue[s] || []).forEach(function(c){ var l = findLab(c); if(l) seq.push(l); });
+    }
+    return seq;
+  }
+  function selfSetIn(level, code){
+    var sd = SESSION_PLAN[level].selfDue;
+    for(var s in sd){ if(sd[s].indexOf(code) > -1) return +s; }
+    return null;
+  }
+  async function loadAllLabs(){
+    if(ALL_LABS.length) return;
+    var res = await grc.from('grc_lab_content').select('track,lab_number,book,domain,course_level,study_mode,live_session');
+    if(res.error) throw res.error;
+    ALL_LABS = res.data.map(function(r){
+      return { track: r.track, lab: r.lab_number, book: r.book, domain: r.domain, level: r.course_level, mode: r.study_mode, session: r.live_session };
+    });
+  }
+  async function openSessionLab(code){
+    var l = findLab(code); if(!l) return;
+    sessionNav = true;
+    currentTrack = l.track; currentLab = l.lab; currentMode = 'lab';
+    var main = document.getElementById('main-content');
+    main.innerHTML = '<p style="padding:24px;color:var(--muted);">Loading lab&hellip;</p>';
+    try{ await loadLabContent(); }catch(e){ main.innerHTML = '<p style="padding:24px;color:var(--red);">Could not load this lab. Check your connection and reload the page.</p>'; return; }
+    await pullRemoteProgress();
+    render();
+  }
+  window.openSessionLab = openSessionLab;
+  function backToSessions(){ sessionNav = false; currentTrack = 'S'; currentLab = null; render(); }
+  window.backToSessions = backToSessions;
+  function setLevel(v){ currentLevel = v; try{ localStorage.setItem('grcLevel', v); }catch(e){} render(); }
+  window.setLevel = setLevel;
+  async function openFoundations(){ sessionNav = false; currentTrack = '0'; currentLab = null; await loadLabContent(); await pullRemoteProgress(); render(); }
+  window.openFoundations = openFoundations;
+
+  function levelBadge(l){
+    var a = findLab(currentTrack + l.lab) || {};
+    if(!a.level) return '';
+    var lab = a.level === 'intermediate' ? 'Intermediate' : 'Advanced';
+    if(a.mode === 'live') return '<span class="lvl-badge">' + lab + ' &middot; Session ' + a.session + '</span>';
+    if(a.mode === 'self_study') return '<span class="lvl-badge self">' + lab + ' &middot; Guided self-study &middot; set in session ' + selfSetIn(a.level, labCode(a)) + '</span>';
+    return '<span class="lvl-badge ext">' + lab + ' &middot; Extended practice (optional)</span>';
+  }
+  function sessionNavHtml(l){
+    var a = findLab(currentTrack + l.lab);
+    if(!a || !a.level) return '';
+    var html = '<div class="session-nav"><button class="back-link" style="margin:0" onclick="backToSessions()">&larr; All sessions</button>';
+    if(a.mode === 'extended'){ return html + '</div>'; }
+    var seq = sessionSequence(a.level), i = seq.indexOf(a), nx = seq[i + 1];
+    if(nx){
+      var where = nx.mode === 'live' ? 'Session ' + nx.session : 'Self-study';
+      html += '<button class="btn" onclick="openSessionLab(\'' + labCode(nx) + '\')">Next: ' + where + ' &middot; ' + labCode(nx) + ' ' + esc(nx.book) + ' &rarr;</button>';
+    } else {
+      var plan = SESSION_PLAN[a.level];
+      html += '<span class="done-note">Last lab of the ' + plan.label + ' level &mdash; next: session ' + plan.total + ', the stakeholder panel' + (a.level === 'intermediate' ? ', then the Advanced level' : '') + '.</span>';
+    }
+    return html + '</div>';
+  }
+
+  function renderSessionList(main){
+    var plan = SESSION_PLAN[currentLevel];
+    var html = '<div class="lvl-switch">';
+    ['intermediate','advanced'].forEach(function(v){
+      html += '<button class="' + (v === currentLevel ? 'on' : '') + '" onclick="setLevel(\'' + v + '\')">' + SESSION_PLAN[v].label + ' &middot; ' + SESSION_PLAN[v].total + ' sessions</button>';
+    });
+    html += '</div>';
+    var seq = sessionSequence(currentLevel), done = seq.filter(isDone).length;
+    html += '<h2 class="page-title">' + plan.label + ' &mdash; ' + plan.sub + '</h2>';
+    html += '<p class="page-sub">Follow the rows in order. Open a lab, work it, mark it complete, then use <b>Next</b> at the bottom of the lab.</p>';
+    html += '<div class="card"><div style="font-weight:700;margin-bottom:4px;">Progress: ' + done + ' of ' + seq.length + ' ' + plan.label + ' labs complete</div>';
+    html += '<div class="progress-bar"><div class="progress-fill" style="width:' + Math.round(done/Math.max(seq.length,1)*100) + '%;"></div></div></div>';
+    if(currentLevel === 'intermediate'){
+      html += '<div class="sess-row" onclick="openFoundations()"><span class="sn">Pre</span><span class="code">F</span><span class="t"><b>Foundations 1&ndash;12 &middot; pre-work</b><small>Screens and mechanics &mdash; finish before session 1</small></span><span class="status-chip todo">Open</span></div>';
+    }
+    for(var s = 1; s <= plan.total; s++){
+      var live = ALL_LABS.filter(function(l){ return l.level === currentLevel && l.session === s; })[0];
+      var mark = plan.marks[s] ? '<span class="mark-tag">' + plan.marks[s] + '</span>' : '';
+      if(live){
+        var d = isDone(live);
+        html += '<div class="sess-row" onclick="openSessionLab(\'' + labCode(live) + '\')"><span class="sn">S' + s + '</span><span class="code">' + labCode(live) + '</span>';
+        html += '<span class="t"><b>' + esc(live.book) + '</b><small>' + esc(live.domain) + '</small>' + (mark ? '<br>' + mark : '') + '</span>';
+        html += '<span class="status-chip ' + (d?'done':'todo') + '">' + (d?'Complete':'Open') + '</span></div>';
+      } else if(plan.plain[s]){
+        html += '<div class="sess-row plain"><span class="sn">S' + s + '</span><span class="code"></span><span class="t"><b>' + plan.plain[s][0] + '</b><small>' + plan.plain[s][1] + '</small>' + (mark ? '<br>' + mark : '') + '</span></div>';
+      }
+      (plan.selfDue[s] || []).forEach(function(c){
+        var l = findLab(c); if(!l) return;
+        var d = isDone(l);
+        html += '<div class="sess-row self" onclick="openSessionLab(\'' + c + '\')"><span class="code">&#8627; ' + c + '</span>';
+        html += '<span class="t"><b>' + esc(l.book) + '</b><small>Guided self-study &mdash; complete before session ' + (s + 1) + '</small></span>';
+        html += '<span class="status-chip ' + (d?'done':'todo') + '">' + (d?'Complete':'Open') + '</span></div>';
+      });
+    }
+    var ext = ALL_LABS.filter(function(l){ return l.level === currentLevel && l.mode === 'extended'; });
+    if(ext.length){
+      html += '<h3 style="margin:20px 0 8px;font-size:0.95rem;">Extended practice &mdash; optional</h3>';
+      ext.sort(function(a,b){ return labCode(a) < labCode(b) ? -1 : 1; }).forEach(function(l){
+        var d = isDone(l);
+        html += '<div class="sess-row ext" onclick="openSessionLab(\'' + labCode(l) + '\')"><span class="code">' + labCode(l) + '</span><span class="t"><b>' + esc(l.book) + '</b><small>' + esc(l.domain) + '</small></span>';
+        html += '<span class="status-chip ' + (d?'done':'todo') + '">' + (d?'Complete':'Open') + '</span></div>';
+      });
+    }
+    main.innerHTML = html;
+  }
   var currentMode = 'guide';  // 'guide' | 'lab'
   var currentLab = null;      // null = list view; a module/lab number = detail view
 
@@ -246,6 +401,8 @@
 
   // ---------- CONTENT LOADING ----------
   async function loadLabContent(){
+    await loadAllLabs();
+    if (TRACK_META[currentTrack].type === 'sessions') { LABS = []; FOUNDATIONS = []; return; }
     if (TRACK_META[currentTrack].type === 'foundations') {
       var fres = await grc.from('grc_foundations_content').select('*').order('module_number');
       if(fres.error) throw fres.error;
@@ -387,6 +544,7 @@
       if(res.error) throw res.error;
       var completed = {};
       (res.data || []).forEach(function(r){ completed[r.module_id] = true; });
+      REMOTE_DONE = completed;
       LABS.forEach(function(lab){
         var ls = labState(lab.lab);
         if(completed[currentTrack + '_lab' + lab.lab]) ls.complete = true;
@@ -421,9 +579,10 @@
     TRACKS_ORDER.forEach(function(t){
       var btn = document.createElement('button');
       btn.innerHTML = TRACK_META[t].name;
-      btn.className = (t === currentTrack ? 'active' : '');
+      btn.className = ((sessionNav ? t === 'S' : t === currentTrack) ? 'active' : '');
       btn.onclick = async function(){
-        if(t === currentTrack) return;
+        if(t === currentTrack && !sessionNav) return;
+        sessionNav = false;
         currentTrack = t;
         currentLab = null;
         var main = document.getElementById('main-content');
@@ -462,6 +621,7 @@
     main.innerHTML = '';
     window.scrollTo(0,0);
 
+    if(TRACK_META[currentTrack].type === 'sessions'){ return renderSessionList(main); }
     var isFoundations = TRACK_META[currentTrack].type === 'foundations';
     var items = isFoundations ? FOUNDATIONS : LABS;
     if(items.length === 0){
@@ -629,7 +789,8 @@
   // ================= SCENARIO TRACKS: GUIDE DETAIL =================
   function renderLabGuideDetail(main, l){
     var tm = TRACK_META[currentTrack];
-    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    var html = sessionNav ? '<button class="back-link" onclick="backToSessions()">&larr; All sessions</button>' : '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += levelBadge(l);
     html += '<p class="book-card eyebrow">' + esc(tm.name.replace(/&amp;/g,'&')) + ' &middot; ' + esc(l.domain) + '</p>';
     html += '<h2 class="page-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</h2>';
     html += '<div class="card book-card">';
@@ -643,6 +804,7 @@
     html += '</ul></div>';
     html += '<div class="callout"><b>Suggested Deliverable Before Moving to the Next Lab</b>A written Field 13 write-up for ' + esc(l.book) + ' &mdash; in your own words, completed before revealing the Primary Lab\'s model write-up. Then answer the facilitator-only escalation question the same way, and compare both against the model answers with your facilitator.</div>';
     html += '<button class="btn" onclick="currentMode=\'lab\'; render();">Open This Lab in Primary Lab &rarr;</button>';
+    if(sessionNav) html += sessionNavHtml(l);
     html += '</div>';
     main.innerHTML = html;
   }
@@ -651,7 +813,8 @@
   function renderLabLabDetail(main, l){
     var ls = labState(l.lab);
     var fm = TRACK_META[currentTrack].fields;
-    var html = '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    var html = sessionNav ? '<button class="back-link" onclick="backToSessions()">&larr; All sessions</button>' : '<button class="back-link" onclick="currentLab=null; render();">&larr; Back to list</button>';
+    html += levelBadge(l);
     html += '<p class="book-card eyebrow">' + esc(l.domain) + '</p>';
     html += '<h2 class="page-title">Lab ' + l.lab + ' &mdash; ' + esc(l.book) + '</h2>';
     html += '<div class="card book-card">';
@@ -700,6 +863,7 @@
 
     html += '<div class="mark-complete-row"><span class="status-note ' + (ls.complete?'done':'') + '">' + (ls.complete ? '\u2713 Lab marked complete' : 'Not yet marked complete') + '</span>';
     html += '<button class="btn ' + (ls.complete?'secondary':'') + '" id="complete-btn">' + (ls.complete ? 'Mark as Not Complete' : 'Mark Lab Complete') + '</button></div>';
+    if(sessionNav) html += sessionNavHtml(l);
     html += '</div>';
     main.innerHTML = html;
     wireLabInteractions(l, ls);
