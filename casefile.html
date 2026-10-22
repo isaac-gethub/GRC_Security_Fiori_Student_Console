@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File — SAP GRC Security &amp; Fiori Labs — TIB Systems</title>
+<meta name="description" content="How SAP GRC Security &amp; Fiori Labs works: a sample ticket from Lab B3 (MSMP / BRF+), the four-beat method, and all 44 labs by level and track.">
+<style>
+  :root{
+    --navy:#1F3864; --navy-dark:#152747; --blue:#2E5395; --accent:#3E7CB1; --gold:#B8860B; --gold-light:#D9A93A;
+    --green:#1E7145; --bg:#F4F6FA; --card:#FFFFFF; --border:#E1E6EF; --text:#1B2430; --muted:#5A6472;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;}
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style",Palatino,serif;color:var(--navy);line-height:1.25;margin:0 0 12px;}
+  a{color:var(--blue);}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 16px;}
+
+  /* nav */
+  .nav{background:var(--navy-dark);color:#fff;position:sticky;top:0;z-index:20;border-bottom:3px solid var(--gold);}
+  .nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;}
+  .brand{color:#fff;text-decoration:none;font-weight:700;font-size:15px;}
+  .brand span{display:block;font-weight:400;font-size:11.5px;color:#C9D4E8;}
+  .nav-links{display:none;gap:20px;font-size:14px;}
+  .nav-links a{color:#E3E9F4;text-decoration:none;}
+  .nav-links a:hover{color:#fff;}
+  .btn{display:inline-block;padding:11px 20px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none;text-align:center;}
+  .btn-gold{background:var(--gold);color:#fff;}
+  .btn-gold:hover{background:#9A7009;}
+  .btn-ghost{border:1.5px solid rgba(255,255,255,.55);color:#fff;}
+  .btn-ghost:hover{border-color:#fff;}
+  .btn-sm{padding:8px 14px;font-size:13.5px;}
+
+  /* hero */
+  .hero{background:linear-gradient(160deg,var(--navy-dark),var(--navy) 60%,var(--blue));color:#fff;padding:40px 0 36px;}
+  .eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-light);margin-bottom:12px;}
+  .hero h1{color:#fff;font-size:29px;max-width:22ch;}
+  .hero .lede{color:#DCE4F1;font-size:16.5px;max-width:62ch;margin:0 0 22px;}
+  .cta-row{display:flex;flex-direction:column;gap:10px;}
+  .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.18);border-radius:10px;overflow:hidden;margin-top:28px;}
+  .stat{background:rgba(21,39,71,.55);padding:14px 14px;}
+  .stat b{display:block;font-family:Georgia,serif;font-size:24px;color:var(--gold-light);}
+  .stat span{font-size:13px;color:#C9D4E8;}
+  .stat:last-child{grid-column:span 2;}
+
+  /* sections */
+  section{padding:44px 0;}
+  section.alt{background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+  .kicker{font-size:12px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;color:var(--gold);margin-bottom:6px;display:block;}
+  h2{font-size:24px;}
+  .sub{color:var(--muted);max-width:70ch;margin:0 0 24px;}
+
+  /* demand table */
+  .demand{display:grid;gap:12px;}
+  .drow{background:#fff;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;}
+  section.alt .drow{background:var(--bg);}
+  .drow h3{font-family:inherit;font-size:15.5px;margin:0 0 4px;color:var(--navy);}
+  .drow p{margin:0;font-size:14.5px;color:var(--muted);}
+  .drow .where{margin-top:6px;font-size:13.5px;color:var(--text);}
+  .drow .where b{color:var(--green);}
+  .meter{margin-top:22px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .bar{height:14px;background:#E8ECF3;border-radius:8px;overflow:hidden;margin:10px 0 8px;}
+  .bar i{display:block;height:100%;width:89%;background:linear-gradient(90deg,var(--accent),var(--green));}
+  .meter small{color:var(--muted);font-size:13px;}
+
+  /* roles */
+  .pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+  .pill{background:#EAF0F8;color:var(--navy);border:1px solid #D3DEEE;border-radius:20px;padding:7px 13px;font-size:13.5px;font-weight:600;}
+  .note{font-size:13.5px;color:var(--muted);margin-top:14px;}
+
+  /* foundations */
+  .flist,.labs{list-style:none;margin:0;padding:0;display:grid;gap:8px;}
+  .flist li,.labs li{background:#fff;border:1px solid var(--border);border-radius:8px;padding:11px 13px;display:flex;gap:12px;align-items:flex-start;}
+  section.alt .flist li{background:var(--bg);}
+  .fn,.ln{flex-shrink:0;font-weight:800;font-size:13px;color:#fff;background:var(--navy);border-radius:6px;padding:3px 7px;min-width:34px;text-align:center;}
+  .ln{background:var(--accent);}
+  .flist b,.labs b{display:block;font-size:14.5px;}
+  .fx,.ld{display:block;font-size:12.5px;color:var(--muted);}
+  .tag{flex-shrink:0;font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;border-radius:4px;padding:2px 6px;margin-left:auto;}
+  .tag+.tag{margin-left:4px;}
+  .tag.new{background:#E6F2EA;color:var(--green);}
+  .tag.sim{background:#FBF1DC;color:#8A6408;}
+
+  /* tracks */
+  .track{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden;}
+  .track summary{cursor:pointer;list-style:none;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;background:#F8FAFD;}
+  .track summary::-webkit-details-marker{display:none;}
+  .track summary::after{content:"+";margin-left:auto;font-weight:800;color:var(--accent);font-size:18px;}
+  .track[open] summary::after{content:"–";}
+  .tl{font-size:12px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;}
+  .tn{font-family:Georgia,serif;font-weight:700;color:var(--navy);font-size:17px;}
+  .tc{font-size:13px;color:var(--muted);}
+  .tdesc{margin:0;padding:12px 16px 4px;color:var(--muted);font-size:14.5px;}
+  .labs{padding:10px 16px 16px;}
+  .labs li{background:var(--bg);}
+
+  /* flow */
+  .flow{list-style:none;margin:0;padding:0;display:grid;gap:10px;counter-reset:s;}
+  .flow li{counter-increment:s;background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px 12px 52px;position:relative;font-size:14.5px;}
+  section.alt .flow li{background:var(--bg);}
+  .flow li::before{content:counter(s);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--gold);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;}
+  .flow b{color:var(--navy);}
+
+  /* honesty */
+  .honest{background:#fff;border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:8px;padding:16px 18px;}
+  .honest ul{margin:8px 0 0;padding-left:20px;}
+  .honest li{margin-bottom:6px;font-size:14.5px;}
+
+  /* faq */
+  details.q{background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;}
+  section.alt details.q{background:var(--bg);}
+  details.q summary{cursor:pointer;padding:13px 16px;font-weight:700;color:var(--navy);}
+  details.q p{margin:0;padding:0 16px 14px;color:var(--muted);font-size:14.5px;}
+
+  /* final cta */
+  .final{background:var(--navy-dark);color:#fff;text-align:center;padding:44px 0;}
+  .final h2{color:#fff;}
+  .final p{color:#C9D4E8;max-width:56ch;margin:0 auto 20px;}
+  .final .cta-row{align-items:center;}
+  footer{background:#0F1C33;color:#9DABC2;font-size:12.5px;text-align:center;padding:18px 16px;}
+  footer a{color:#C9D4E8;}
+
+  /* ~600px phone → tablet */
+  @media (min-width:600px){
+    .wrap{padding:0 24px;}
+    .hero{padding:52px 0 44px;}
+    .hero h1{font-size:36px;}
+    .cta-row{flex-direction:row;flex-wrap:wrap;}
+    .stats{grid-template-columns:repeat(3,1fr);}
+    .demand{grid-template-columns:1fr 1fr;}
+    .flist{grid-template-columns:1fr 1fr;}
+    .final .cta-row{justify-content:center;}
+  }
+  /* ~880px tablet → desktop */
+  @media (min-width:880px){
+    .nav-links{display:flex;}
+    .hero h1{font-size:42px;}
+    .stats{grid-template-columns:repeat(5,1fr);}
+    .stat:last-child{grid-column:auto;}
+    .hero h1{max-width:26ch;}
+    h2{font-size:28px;}
+    section{padding:56px 0;}
+    .labs{grid-template-columns:1fr 1fr;}
+    .flow{grid-template-columns:repeat(2,1fr);}
+    .two{display:grid;grid-template-columns:1.1fr .9fr;gap:32px;align-items:start;}
+  }
+  /* levels */
+  .levels{display:grid;gap:14px;margin-top:8px;}
+  .lvl{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;}
+  .lvl.best{border:2px solid var(--gold-light);}
+  .lvl .lk{font-size:12px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1px;}
+  .lvl h3{margin:4px 0 2px;font-family:Georgia,serif;color:var(--navy);font-size:19px;}
+  .lvl .price{font-size:30px;font-weight:800;color:var(--navy);margin:6px 0 2px;}
+  .lvl .pn{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  .lvl ul{margin:0;padding-left:18px;font-size:14.5px;}
+  .lvl li{margin-bottom:5px;}
+  .sched{margin-top:18px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px 18px;font-size:14.5px;}
+  .sched b{color:var(--navy);}
+  .dates{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;}
+  .dates span{background:#EAF0F8;border:1px solid #D3DEEE;border-radius:14px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--navy);}
+  .tag.int{background:#E3EEF9;color:var(--blue);}
+  .tag.adv{background:#FBEBD5;color:#8A5A08;}
+  .tag.ext{background:#EEF0F3;color:var(--muted);}
+  @media (min-width:880px){.levels{grid-template-columns:repeat(3,1fr);}}
+
+  /* career guide + job market (mobile-first; 600px / 880px) */
+  .cg{display:grid;gap:18px;}
+  .cg-card{background:#fff;border:1px solid #D9DEE7;border-radius:10px;padding:18px;}
+  .cg-card h3{margin:0 0 6px;}
+  .cg-card ul{margin:6px 0 0;padding-left:18px;font-size:14.5px;}
+  .cg-form label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;margin:10px 0 4px;color:#5A6472;}
+  .cg-form input,.cg-form select{width:100%;padding:10px 12px;font-size:15px;border:1px solid #C9D1DD;border-radius:6px;font-family:inherit;background:#fff;box-sizing:border-box;}
+  .cg-form button{margin-top:14px;width:100%;padding:12px;font-size:15px;font-weight:700;border:0;border-radius:6px;cursor:pointer;color:#fff;background:var(--gold);font-family:inherit;}
+  .cg-form button:disabled{opacity:.6;cursor:wait;}
+  .cg-note{font-size:12.5px;color:#5A6472;margin-top:8px;}
+  .cg-msg{display:none;margin-top:12px;padding:10px 12px;border-radius:6px;font-size:14px;}
+  .cg-msg.ok{display:block;background:#E6F2EA;color:#1E7145;}
+  .cg-msg.err{display:block;background:#F6E5E2;color:#A24B3F;}
+  .jm{display:flex;flex-direction:column;gap:12px;align-items:flex-start;background:#fff;border:1px solid #D9DEE7;border-radius:10px;padding:18px;}
+  .jm a.jm-btn{display:inline-block;background:var(--gold);color:#fff;text-decoration:none;font-weight:700;padding:11px 16px;border-radius:6px;}
+  @media (min-width:600px){.cg-form .cg-row{display:grid;grid-template-columns:1fr 1fr;gap:0 12px;}.cg-form button{width:auto;padding:12px 22px;}}
+  @media (min-width:880px){.cg{grid-template-columns:1fr 1.1fr;align-items:start;}.jm{flex-direction:row;align-items:center;justify-content:space-between;}}
+
+  .incl-wrap{overflow-x:auto;border:1px solid #D9DEE7;border-radius:8px;background:#fff;}
+  .incl{width:100%;border-collapse:collapse;font-size:14.5px;min-width:520px;}
+  .incl th{background:var(--navy);color:#fff;text-align:left;padding:10px 14px;font-size:13px;}
+  .incl td{padding:9px 14px;border-top:1px solid #E3E7EE;vertical-align:top;}
+  .incl tr:nth-child(even) td{background:#F6F8FB;}
+  .incl td:first-child{font-weight:700;}
+  .cap-list{margin:0;padding-left:20px;display:grid;gap:8px;font-size:15px;}
+
+  /* case file */
+  .cf-card{background:#fff;border:1px solid #D9DEE7;border-radius:10px;padding:20px;margin-bottom:14px;}
+  .cf-step{display:grid;grid-template-columns:1fr;gap:4px;margin:0 0 14px;}
+  .cf-step .n{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold);}
+  .cf-step p{margin:0;}
+  .cf-steps{margin:6px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14.5px;}
+  .cf-compare{display:grid;grid-template-columns:1fr;gap:14px;}
+  .cf-compare .cf-card{margin:0;}
+  .cf-compare .lbl{font-size:11.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#5A6472;}
+  .cf-compare q{display:block;font-size:18px;font-weight:700;margin:8px 0;quotes:"\201C" "\201D";}
+  .cf-beats{display:grid;grid-template-columns:1fr;gap:12px;counter-reset:b;}
+  .cf-beats .cf-card{margin:0;position:relative;padding-left:62px;}
+  .cf-beats .cf-card::before{counter-increment:b;content:"0" counter(b);position:absolute;left:18px;top:18px;font-weight:800;font-size:20px;color:var(--gold);}
+  .cf-beats h3{margin:0 0 4px;font-size:16px;}
+  .cf-beats p{margin:0;font-size:14.5px;}
+  details.reveal{margin-top:10px;border:1px dashed var(--gold);border-radius:8px;padding:10px 14px;background:#FFFBF2;}
+  details.reveal summary{cursor:pointer;font-weight:700;}
+  .cf-thread{font-size:19px;font-weight:700;border-left:4px solid var(--gold);padding:6px 0 6px 16px;margin:10px 0;}
+  .cf-list{display:grid;grid-template-columns:1fr;gap:8px;margin:0;padding:0;list-style:none;}
+  .cf-list li{background:#fff;border:1px solid #D9DEE7;border-radius:8px;padding:10px 12px;font-size:14px;}
+  .cf-list b{display:block;}
+  @media (min-width:600px){.cf-compare{grid-template-columns:1fr 1fr;}.cf-list{grid-template-columns:1fr 1fr;}}
+  @media (min-width:880px){.cf-beats{grid-template-columns:1fr 1fr;}.cf-step{grid-template-columns:180px 1fr;gap:16px;}.cf-list{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a class="brand" href="course.html">TIB Systems<span>SAP GRC Security &amp; Fiori Labs</span></a>
+    <div class="nav-links"><a href="course.html">Overview</a><a href="course.html#levels">Levels &amp; pricing</a><a href="course.html#demand">Skills demand</a><a href="course.html#inside">What's inside</a><a href="course.html#labs">How labs work</a><a href="course.html#faq">FAQ</a></div>
+    <a class="btn btn-gold btn-sm" href="index.html">Sign in</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Case File · How the labs work</span>
+    <h1>Real access-risk work doesn't start with a transaction code.</h1>
+    <p class="lede">It starts with a ticket, a gap nobody meant to leave, and a question you have to answer before you're allowed to open SAP. 44 labs across a whole project, from blueprint to hypercare — and the diagnosis comes first, every time.</p>
+    <div class="cta-row"><a class="btn btn-gold" href="enrol.html">See open seats and enrol</a><a class="btn btn-ghost" href="course.html#levels">Levels &amp; pricing</a></div>
+  </div>
+</header>
+
+<section id="sample">
+  <div class="wrap">
+    <span class="kicker">A sample from the case file</span>
+    <h2>Lab B3 — The Stage With No Way Out</h2>
+    <p class="sub">MSMP / BRF+ workflow technical build · Intermediate, session 9 · one of your three marked builds.</p>
+    <div class="cf-card">
+      <div class="cf-step"><span class="n">1 · The ticket</span><p>The approved design for contractor access requests specifies manager approval, then compliance sign-off, with a mandatory end date. Building the BRF+ routing rule for the compliance stage, you find the design doesn't say what happens if the named compliance approver is on leave — and without a fallback, the workflow simply stalls.</p></div>
+      <div class="cf-step"><span class="n">2 · Why it matters</span><p>Any contractor request submitted while the approver is out gets stuck indefinitely, with no escalation — defeating the mandatory sign-off the design was built to enforce.</p></div>
+      <div class="cf-step"><span class="n">3 · Diagnose before you build</span><p>Design a fallback agent-determination rule that preserves the sign-off requirement — never auto-approving — while preventing an indefinite stall. The manager-approval stage already has a fallback pattern; that is your template.</p></div>
+      <div class="cf-step"><span class="n">4 · Build it</span><div><ol class="cf-steps">
+        <li>Confirm the backup compliance approver in writing, and check their role includes compliance sign-off authorization.</li>
+        <li>Agree the timeout window with the compliance team.</li>
+        <li>Build the BRF+ escalation rule in the ZZ_TRAIN_ namespace, mirroring the manager-stage pattern.</li>
+        <li>Test a request left unanswered for the full window: it must escalate to the backup — never approve and never stall.</li>
+      </ol></div></div>
+      <div class="cf-step"><span class="n">5 · Stakeholder pushback</span><div><p>“Won't adding a backup approver dilute the compliance sign-off — now two people can approve it instead of one accountable owner?”</p>
+        <details class="reveal"><summary>Answer it yourself first — then reveal the model answer</summary>
+        <p style="margin:8px 0 0;">The backup only activates after the primary has had the full window and hasn't acted — it's an escalation path, not parallel approval authority. The primary stays the accountable owner for every normal-path request; the backup exists only to prevent an indefinite stall, the same way the manager-approval stage already works.</p></details>
+        <p style="margin-top:10px;"><b>Escalation question:</b> the compliance team wants no timeout at all — every request waits for the primary, however long it takes. How do you respond?</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="why-not-a-manual">
+  <div class="wrap">
+    <span class="kicker">Why this isn't a manual</span>
+    <h2>Most SAP access training teaches you where the buttons are. This teaches you what to look for before you touch one.</h2>
+    <div class="cf-compare">
+      <div class="cf-card"><span class="lbl">Conventional training</span><q>Set a timeout on the stage so it auto-approves. Save. Test.</q><p>It clears the stuck requests — by removing the control the stage exists to enforce.</p></div>
+      <div class="cf-card"><span class="lbl">TIB case file — Lab B3</span><q>The stage can't stall, and it can't approve on its own. So what should it do?</q><p>You design the answer, build it in your own practice namespace, then defend it to a stakeholder who isn't convinced yet.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <span class="kicker">The method</span>
+    <h2>Every lab runs on the same four beats.</h2>
+    <p class="sub">Because this is the order a real engagement forces on you — and rehearsing it lab after lab is what makes it automatic on a client system.</p>
+    <div class="cf-beats">
+      <div class="cf-card"><h3>Diagnose before you're allowed to type</h3><p>What's broken, why it matters and what the fix has to achieve — planned before you open a transaction.</p></div>
+      <div class="cf-card"><h3>Build it yourself, in your own namespace</h3><p>Real SAP GUI and Fiori work in the ZZ_TRAIN_ practice namespace on a live S/4HANA and GRC training system — never production.</p></div>
+      <div class="cf-card"><h3>Write up your fix before you see ours</h3><p>Your resolution first; only then the model answer — so you find out what you missed while it still costs nothing.</p></div>
+      <div class="cf-card"><h3>Defend it against someone who doesn't buy it</h3><p>Every lab ends with a stakeholder pushback and an escalation question; each level ends with a stakeholder panel.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="curriculum">
+  <div class="wrap">
+    <span class="kicker">The case file</span>
+    <h2>44 labs. Four project tracks. Two levels.</h2>
+    <p class="sub">Each lab is tagged with its level and session. Six run as design and simulation exercises: A9, A10, A11, B9, C9 and C11.</p>
+    <h3 style="margin:22px 0 10px;color:var(--navy);">Track A — Design &amp; Blueprint</h3><ul class="cf-list"><li><b>A1 — The Matrix Nobody Agreed On</b>Role Design & Naming Convention Standards · <em>Intermediate · session 2</em></li><li><b>A2 — The Rule That Didn't Exist Yet</b>SoD Ruleset Design · <em>Intermediate · session 4</em></li><li><b>A3 — Nobody Owns the Fire Extinguisher</b>Emergency Access Management (Firefighter) Design · <em>Intermediate · session 6</em></li><li><b>A4 — The Approval Chain With No Chain</b>MSMP Workflow Design · <em>Intermediate · session 8</em></li><li><b>A5 — The Launchpad With No Floor Plan</b>Fiori Launchpad Space & Catalog Design · <em>Intermediate · session 10</em></li><li><b>A6 — The Same Question, Answered Five Different Ways</b>SU24 Authorization Default Governance Design · <em>Intermediate · session 13</em></li><li><b>A7 — The Form That Asked the Wrong Questions</b>Access Request Form Design · <em>Intermediate · self-study</em></li><li><b>A8 — One Risk Library, Three Different Answers</b>SoD Risk Library Scoping Design · <em>Intermediate · session 15</em></li><li><b>A9 — Forty Roles and No Owners</b>Business Role Management (BRM) Governance Design — simulation · <em>Advanced · session 8</em></li><li><b>A10 — The Review Everyone Approved</b>User Access Review (UAR) Campaign Design — simulation · <em>Advanced · session 9</em></li><li><b>A11 — The Cloud App Nobody Governs</b>BTP / Cloud Identity & IAG Design — simulation · <em>Advanced · session 7</em></li><li><b>A12 — The Request List That Arrived on Monday</b>SOX Access-Evidence Readiness Design · <em>Advanced · session 1</em></li></ul><h3 style="margin:22px 0 10px;color:var(--navy);">Track B — Configuration &amp; Build</h3><ul class="cf-list"><li><b>B1 — The Boundary the Matrix Didn't Explain</b>PFCG Role Build from Role Matrix · <em>Intermediate · session 3</em></li><li><b>B2 — The App That Wasn't There Anymore</b>SoD Ruleset Technical Build · <em>Intermediate · session 5</em></li><li><b>B3 — The Stage With No Way Out</b>MSMP / BRF+ Workflow Technical Build · <em>Intermediate · session 9</em></li><li><b>B4 — The App That Wasn't Supposed to Exist Anymore</b>Fiori Launchpad Technical Build · <em>Intermediate · session 11</em></li><li><b>B5 — The Transaction the Analysis Got Wrong</b>Emergency Access Management (Firefighter) Technical Build · <em>Intermediate · session 7</em></li><li><b>B6 — Two Teams, One Standard, Different Tools</b>SU24 Authorization Default Governance — Technical Build · <em>Intermediate · self-study</em></li><li><b>B7 — The Rule the Tool Couldn't Quite Follow</b>Access Request Form Technical Build · <em>Intermediate · self-study</em></li><li><b>B8 — The Draft That Wouldn't Retire Quietly</b>SoD Risk Library Technical Build · <em>Intermediate · self-study</em></li><li><b>B9 — The Master Role That Wouldn't Derive</b>BRM Technical Build — Master and Derived Roles — simulation · <em>Advanced · self-study</em></li><li><b>B10 — The Tile That Opened Nothing</b>Fiori OData Service Enablement and S_SERVICE Build · <em>Intermediate · session 12</em></li><li><b>B11 — Can't Post, Won't Wait</b>Authorization Troubleshooting Ticket — SU53 / STAUTHTRACE / SUIM · <em>Intermediate · session 14</em></li><li><b>B12 — The Log Nobody Was Writing</b>Privileged-ID Review and Security Audit Log Filter Build · <em>Advanced · session 6</em></li></ul><h3 style="margin:22px 0 10px;color:var(--navy);">Track C — Go-Live &amp; Cutover</h3><ul class="cf-list"><li><b>C1 — The Load That Almost Went Out Wrong</b>Mass Role Assignment (LSMW) Cutover Execution · <em>Advanced · session 2</em></li><li><b>C2 — The War Room at 2 AM</b>Go-Live Hypercare Ticket Triage · <em>Advanced · session 4</em></li><li><b>C3 — The Firefighter Nobody Had Time to Provision</b>Emergency Access During the Blackout Window · <em>Advanced · self-study</em></li><li><b>C4 — The Go/No-Go Call</b>Security Readiness Sign-off Before Go-Live · <em>Advanced · session 3</em></li><li><b>C5 — The Access That Didn't Follow the User</b>Day-1 Post-Cutover Access Verification · <em>Advanced · self-study</em></li><li><b>C6 — The Rehearsal That Skipped a Step</b>Cutover Rehearsal (Mock Go-Live) Defect · <em>Advanced · self-study</em></li><li><b>C7 — Everyone Wants to Be a Firefighter This Weekend</b>Hypercare Access Escalation Management · <em>Advanced · extended practice</em></li><li><b>C8 — The Last Ticket Before Stabilization</b>Hypercare Exit / Stabilization Sign-off · <em>Advanced · extended practice</em></li><li><b>C9 — The First Review After Go-Live</b>First Post-Go-Live UAR Campaign — simulation · <em>Advanced · self-study</em></li><li><b>C10 — Approved, but Not There</b>GRC Connector and Provisioning Failure at Go-Live · <em>Advanced · session 5</em></li><li><b>C11 — Day One, No Login</b>Day-1 Cloud Provisioning Failure (IPS / IAS) — simulation · <em>Advanced · self-study</em></li><li><b>C12 — Twelve Requests by Friday</b>External Auditor Evidence Request in Hypercare · <em>Advanced · session 10</em></li></ul><h3 style="margin:22px 0 10px;color:var(--navy);">Track D — Post-Go-Live Support</h3><ul class="cf-list"><li><b>D1 — The Ruleset That Went Quiet</b>Access Risk Analysis / SoD Ruleset Design · <em>Advanced · self-study</em></li><li><b>D2 — The Shared Login</b>Emergency Access Management (Firefighter) · <em>Advanced · extended practice</em></li><li><b>D3 — The Split That Closed a Door</b>Business Role Design & PFCG · <em>Advanced · extended practice</em></li><li><b>D4 — The Approval Nobody Sent</b>MSMP Workflow (GRC Access Control) · <em>Advanced · extended practice</em></li><li><b>D5 — Copied From Someone Else</b>Access Control Provisioning · <em>Advanced · extended practice</em></li><li><b>D6 — The Proposal Nobody Updated</b>User & Role Administration / SU24 Authorization Defaults · <em>Advanced · extended practice</em></li><li><b>D7 — Resolved on the Report</b>SoD Remediation & Mitigating Controls · <em>Advanced · session 11</em></li><li><b>D8 — The Tile That Opened Everything</b>Fiori Catalog & Space Security · <em>Advanced · extended practice</em></li></ul>
+  </div>
+</section>
+
+<section id="thread">
+  <div class="wrap">
+    <span class="kicker">The thread through every lab</span>
+    <h2>Every case ends by naming the pattern, not just the fix.</h2>
+    <p class="cf-thread">The test: would a failure actually show up in the evidence you're relying on? If not, you are holding the wrong evidence.</p>
+    <p class="sub">The same error — mistaking a status flag or a sign-off for proof that access is actually controlled — comes back in a different disguise lab after lab. Recognising the pattern is what lets you catch it on a system you've never seen.</p>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>Train on the work, not just the screens.</h2>
+    <p>Two levels — Intermediate $950, Advanced $850, both $1,650. 12 Foundations modules, 44 labs and four project tracks, mapped to what SAP GRC Security employers are asking for right now.</p>
+    <div class="cta-row">
+      <a class="btn btn-gold" href="enrol.html">See open seats and enrol</a>
+      <a class="btn btn-ghost" href="index.html">Already enrolled? Sign in</a>
+    </div>
+  </div>
+</section>
+
+<footer>TIB Systems LLC — SAP Security, GRC &amp; Controls training · <a href="index.html">Student sign in</a></footer>
+</body>
+</html>
